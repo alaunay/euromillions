@@ -1,17 +1,17 @@
 # euromillions
 
-Shell Script to get Euromillions Numbers and Stars
+Shell Script to get random Euromillions Numbers and Stars
 
 ## Usage
 
 ./euromillions.sh
-will give you the numbers and stars to check
+will give you random numbers and stars to check
 
 ## Current bugs
 
-- No check on duplicate numbers or stars
+- No check on duplicate numbers
 
 ## Possible ameliorations
 
-- sort the stuff
+- sort the numbers
 - multilang

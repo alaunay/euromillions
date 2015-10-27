@@ -12,9 +12,17 @@ numbers () {
 
 # Get and print stars
 stars () {
-	echo "2 étoiles:"
-	echo -n "$[ ( $RANDOM % 11 + 1 ) ] "
-	echo "$[ ( $RANDOM % 11 + 1 ) ] "
+	# initialize identical stars
+	stars[0]=$[ ( $RANDOM % 11 + 1 ) ]
+	stars[1]=${stars[0]}
+
+	# loop until stars are different
+	while [ ${stars[0]} = ${stars[1]} ]; do
+		stars[1]="$[ ( $RANDOM % 11 + 1 ) ] "
+	done
+
+	# Print results
+	echo "Stars: ${stars[@]}"
 }
 
 # Start functions

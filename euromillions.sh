@@ -21,8 +21,11 @@ stars () {
 		stars[1]="$[ ( $RANDOM % 11 + 1 ) ] "
 	done
 
+	# Sort stars
+	IFS=$'\n' stars_sorted=($(sort -n <<<"${stars[*]}"))
+
 	# Print results
-	echo "Stars: ${stars[@]}"
+	echo "Stars: ${stars_sorted[@]}"
 }
 
 # Start functions

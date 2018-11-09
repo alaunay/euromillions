@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 # Get and print numbers
 numbers () {

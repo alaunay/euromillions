@@ -1,7 +1,5 @@
 #! /bin/bash
 
-set -x
-
 COUNTNUMBERS=5
 STARS=2
 NUMBERSUP=50

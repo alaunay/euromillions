@@ -45,7 +45,7 @@ getstars () {
 	stars[1]=${stars[0]}
 
 	# loop until stars are different
-	while [ ${stars[0]} = ${stars[1]} ]; do
+	while [ "x${stars[0]}" = "x${stars[1]}" ]; do
 		stars[1]="$[ ( $RANDOM % ${STARSUP} + ${STARSDOWN} ) ] "
 	done
 

@@ -9,9 +9,8 @@ will give you random numbers and stars to check
 
 ## Current bugs
 
-- No check on duplicate numbers
+- Check on previous number, not on all array
 
 ## Possible ameliorations
 
-- sort the numbers
 - multilang

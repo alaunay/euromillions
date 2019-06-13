@@ -38,12 +38,12 @@ getnumbers () {
 # Get and print stars
 getstars () {
 	# initialize identical stars
-	stars[0]=$[ ( $RANDOM % ${STARSUP} + ${STARSDOWN} ) ]
+	stars[0]=$[ ( RANDOM % STARSUP + STARSDOWN ) ]
 	stars[1]=${stars[0]}
 
 	# loop until stars are different
 	while [ "x${stars[0]}" = "x${stars[1]}" ]; do
-		stars[1]="$[ ( $RANDOM % ${STARSUP} + ${STARSDOWN} ) ] "
+		stars[1]="$[ ( RANDOM % STARSUP + STARSDOWN ) ] "
 	done
 
 	# Sort stars

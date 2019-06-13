@@ -13,16 +13,16 @@ declare -a stars
 getnumbers () {
 
 	# Initialize array with random number
-	nums[0]="$(( $RANDOM % ${NUMBERSUP} + ${NUMBERSDOWN} ))"
+	nums[0]="$(( RANDOM % NUMBERSUP + NUMBERSDOWN ))"
 
 	local i=1
 	while [ "x${i}" != "x${COUNTNUMBERS}" ]; do
-		nums[${i}]="$(( $RANDOM % ${NUMBERSUP} + ${NUMBERSDOWN} ))"
+		nums[${i}]="$(( RANDOM % NUMBERSUP + NUMBERSDOWN ))"
 
 		# Ensure uniqueness: loop to check if num[i-1] != num[i]
 		let previous=i-1;
 		while [ ${nums[$previous]} = ${nums[$i]} ]; do
-			nums[${i}]="$(( $RANDOM % ${NUMBERSUP} + ${NUMBERSDOWN} ))"
+			nums[${i}]="$(( RANDOM % NUMBERSUP + NUMBERSDOWN ))"
 		done
 		let i=i+1;
 	done

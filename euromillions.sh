@@ -20,11 +20,11 @@ getnumbers () {
 		nums[${i}]="$(( RANDOM % NUMBERSUP + NUMBERSDOWN ))"
 
 		# Ensure uniqueness: loop to check if num[i-1] != num[i]
-		let previous=i-1;
+		(( previous=i-1 ))
 		while [ ${nums[$previous]} = ${nums[$i]} ]; do
 			nums[${i}]="$(( RANDOM % NUMBERSUP + NUMBERSDOWN ))"
 		done
-		let i=i+1;
+		(( i=i+1 ))
 	done
 
 	# Sort numbers

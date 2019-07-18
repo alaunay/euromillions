@@ -3,32 +3,17 @@
 COUNTNUMBERS=5
 NUMBERSUP=50
 NUMBERSDOWN=1
+COUNTSTARS=2
 STARSUP=12
 STARSDOWN=1
 
-declare -a nums
-declare -a stars
+declare -a numbers_sorted
+declare -a stars_sorted
 
 # Get and print numbers
 getnumbers () {
 
-	# Initialize array with random number
-	nums[0]="$(( RANDOM % NUMBERSUP + NUMBERSDOWN ))"
-
-	local i=1
-	while [ "x${i}" != "x${COUNTNUMBERS}" ]; do
-		nums[${i}]="$(( RANDOM % NUMBERSUP + NUMBERSDOWN ))"
-
-		# Ensure uniqueness: loop to check if num[i-1] != num[i]
-		(( previous=i-1 ))
-		while [ ${nums[$previous]} = ${nums[$i]} ]; do
-			nums[${i}]="$(( RANDOM % NUMBERSUP + NUMBERSDOWN ))"
-		done
-		(( i=i+1 ))
-	done
-
-	# Sort numbers
-	IFS=$'\n' numbers_sorted=($(sort -n <<<"${nums[*]}"))
+	numbers_sorted=($(shuf -i ${NUMBERSDOWN}-${NUMBERSUP} -n ${COUNTNUMBERS} | sort -n ))
 
 	# Print results
 	echo "Numbers: ${numbers_sorted[@]}"
@@ -37,17 +22,8 @@ getnumbers () {
 
 # Get and print stars
 getstars () {
-	# initialize identical stars
-	stars[0]=$(( RANDOM % STARSUP + STARSDOWN ))
-	stars[1]=${stars[0]}
 
-	# loop until stars are different
-	while [ "x${stars[0]}" = "x${stars[1]}" ]; do
-		stars[1]="$(( RANDOM % STARSUP + STARSDOWN ))"
-	done
-
-	# Sort stars
-	IFS=$'\n' stars_sorted=($(sort -n <<<"${stars[*]}"))
+	stars_sorted=($(shuf -i ${STARSDOWN}-${STARSUP} -n ${COUNTSTARS} | sort -n ))
 
 	# Print results
 	echo "Stars: ${stars_sorted[@]}"

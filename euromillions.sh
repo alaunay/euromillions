@@ -16,7 +16,7 @@ getnumbers () {
 	numbers_sorted=($(shuf -i ${NUMBERSDOWN}-${NUMBERSUP} -n ${COUNTNUMBERS} | sort -n ))
 
 	# Print results
-	echo "Numbers: ${numbers_sorted[@]}"
+	echo "Numbers: ${numbers_sorted[*]}"
 
 }
 
@@ -26,7 +26,7 @@ getstars () {
 	stars_sorted=($(shuf -i ${STARSDOWN}-${STARSUP} -n ${COUNTSTARS} | sort -n ))
 
 	# Print results
-	echo "Stars: ${stars_sorted[@]}"
+	echo "Stars: ${stars_sorted[*]}"
 }
 
 # Start functions

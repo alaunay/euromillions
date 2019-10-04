@@ -13,7 +13,7 @@ declare -a stars_sorted
 # Get and print numbers
 getnumbers () {
 
-	mapfile -t numbers_sorted < <( shuf -i ${NUMBERSDOWN}-${NUMBERSUP} -n ${COUNTNUMBERS} | sort -n )
+	mapfile -t numbers_sorted < <( shuf --random-source=/dev/random -i ${NUMBERSDOWN}-${NUMBERSUP} -n ${COUNTNUMBERS} | sort -n )
 
 	# Print results
 	echo "Numbers: ${numbers_sorted[*]}"
@@ -23,7 +23,7 @@ getnumbers () {
 # Get and print stars
 getstars () {
 
-	mapfile -t stars_sorted < <(shuf -i ${STARSDOWN}-${STARSUP} -n ${COUNTSTARS} | sort -n )
+	mapfile -t stars_sorted < <(shuf --random-source=/dev/random -i ${STARSDOWN}-${STARSUP} -n ${COUNTSTARS} | sort -n )
 
 	# Print results
 	echo "Stars: ${stars_sorted[*]}"

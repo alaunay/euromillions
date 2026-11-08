@@ -45,6 +45,8 @@ Configuration lives in the variables at the top of the script.
 - Indent with tabs.
 - Keep `set -euo pipefail` at the top.
 - Quote every expansion.
+- Colour escapes come from `setup_colors` only. Never print a raw
+  escape, and keep the output readable when colour is disabled.
 - A failing command must fail the script. Never hide a status behind a
   process substitution.
 - Comments explain why, not what.

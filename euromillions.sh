@@ -23,6 +23,59 @@ STARSDOWN=1
 # Entropy source for shuf, overridable to get a reproducible draw
 RANDOM_SOURCE=${RANDOM_SOURCE:-/dev/urandom}
 
+# auto, always, or never; see use_color
+COLOR_MODE=${EUROMILLIONS_COLOR:-auto}
+
+# Colour is off on a pipe, with NO_COLOR set, or on a dumb terminal
+use_color () {
+	local fd=$1
+
+	case "$COLOR_MODE" in
+		always) return 0 ;;
+		never) return 1 ;;
+		auto) ;;
+		*)
+			echo "invalid EUROMILLIONS_COLOR: ${COLOR_MODE}" >&2
+			exit 2
+			;;
+	esac
+
+	[ -z "${NO_COLOR:-}" ] && [ "${TERM:-}" != dumb ] && [ -t "$fd" ]
+}
+
+truecolor () {
+	case "${COLORTERM:-}" in
+		truecolor|24bit) return 0 ;;
+	esac
+	return 1
+}
+
+setup_colors () {
+	RESET= LABEL_COLOR= NUMBERS_COLOR= STARS_COLOR= ERROR_COLOR= ERROR_RESET=
+
+	if use_color 1; then
+		RESET=$'\033[0m'
+		if truecolor; then
+			LABEL_COLOR=$'\033[38;2;154;164;178m'
+			NUMBERS_COLOR=$'\033[1;38;2;77;107;255m'
+			STARS_COLOR=$'\033[1;38;2;238;187;5m'
+		else
+			LABEL_COLOR=$'\033[38;5;247m'
+			NUMBERS_COLOR=$'\033[1;38;5;69m'
+			STARS_COLOR=$'\033[1;38;5;220m'
+		fi
+	fi
+
+	if use_color 2; then
+		ERROR_RESET=$'\033[0m'
+		if truecolor; then
+			ERROR_COLOR=$'\033[1;38;2;255;77;77m'
+		else
+			ERROR_COLOR=$'\033[1;38;5;203m'
+		fi
+	fi
+}
+
 # Build the language list from the available catalogue files
 languages () {
 	local file code list=
@@ -37,12 +90,13 @@ languages () {
 
 usage () {
 	cat <<EOF
-Usage: ${0##*/} [--lang CODE]
+Usage: ${0##*/} [--lang CODE] [--no-color]
 
 Draw ${COUNTNUMBERS} numbers from ${NUMBERSDOWN} to ${NUMBERSUP} and ${COUNTSTARS} stars from ${STARSDOWN} to ${STARSUP}.
 
 Options:
   -l, --lang CODE  output language, overriding the locale
+      --no-color   never use colours
   -h, --help       show this help
 
 Languages: $(languages)
@@ -67,7 +121,8 @@ load_language () {
 	fi
 
 	if [ ! -r "$file" ]; then
-		echo "no language catalogue in ${SCRIPT_DIR}/lang" >&2
+		printf '%sno language catalogue in %s/lang%s\n' \
+			"${ERROR_COLOR}" "${SCRIPT_DIR}" "${ERROR_RESET}" >&2
 		exit 1
 	fi
 
@@ -81,23 +136,26 @@ draw () {
 	local count=$2
 	local lo=$3
 	local hi=$4
+	local value_color=$5
 	local output
 	local -a draws
 
 	# Keep the pipeline status: process substitution would hide a failure
 	if ! output=$(shuf --random-source="${RANDOM_SOURCE}" -i "${lo}-${hi}" -n "${count}" | sort -n); then
-		echo "${MSG_DRAW_FAILED}: ${label}" >&2
+		printf '%s%s: %s%s\n' "${ERROR_COLOR}" "${MSG_DRAW_FAILED}" "${label}" "${ERROR_RESET}" >&2
 		exit 1
 	fi
 
 	mapfile -t draws <<< "${output}"
 
 	if (( ${#draws[@]} != count )); then
-		echo "${MSG_SHORT_DRAW}: ${label} (${#draws[@]}/${count})" >&2
+		printf '%s%s: %s (%s/%s)%s\n' "${ERROR_COLOR}" "${MSG_SHORT_DRAW}" "${label}" \
+			"${#draws[@]}" "${count}" "${ERROR_RESET}" >&2
 		exit 1
 	fi
 
-	echo "${label}: ${draws[*]}"
+	printf '%s%s:%s %s%s%s\n' "${LABEL_COLOR}" "${label}" "${RESET}" \
+		"${value_color}" "${draws[*]}" "${RESET}"
 }
 
 language=$(detect_language)
@@ -116,6 +174,10 @@ while (( $# )); do
 			language=${1#*=}
 			shift
 			;;
+		--no-color)
+			COLOR_MODE=never
+			shift
+			;;
 		-h|--help)
 			usage
 			exit 0
@@ -128,8 +190,9 @@ while (( $# )); do
 	esac
 done
 
+setup_colors
 load_language "$language"
 
 # Start functions
-draw "${MSG_NUMBERS}" "${COUNTNUMBERS}" "${NUMBERSDOWN}" "${NUMBERSUP}"
-draw "${MSG_STARS}" "${COUNTSTARS}" "${STARSDOWN}" "${STARSUP}"
+draw "${MSG_NUMBERS}" "${COUNTNUMBERS}" "${NUMBERSDOWN}" "${NUMBERSUP}" "${NUMBERS_COLOR}"
+draw "${MSG_STARS}" "${COUNTSTARS}" "${STARSDOWN}" "${STARSUP}" "${STARS_COLOR}"

@@ -29,16 +29,25 @@ Stars: 3 12
 ## Usage
 
 ```console
-$ ./euromillions.sh [-l CODE | --lang CODE] [-h | --help]
+$ ./euromillions.sh [-l CODE | --lang CODE] [--no-color] [-h | --help]
 ```
 
 | Option | Effect |
 | --- | --- |
 | `-l, --lang CODE` | Set the output language, overriding the locale |
+| `--no-color` | Never use colours |
 | `-h, --help` | Show the options and the available languages |
 
 Draws are independent, uniform, and read from `/dev/urandom`. Every run
-gives a new grid.
+gives a new grid. Labels are muted, numbers in the EuroMillions blue and stars in the
+EuroMillions gold, as on the FDJ grid.
+
+Colours are used only when the output goes to a terminal. `NO_COLOR`
+disables them, `--no-color` forces them off, and `EUROMILLIONS_COLOR`
+accepts `auto`, `always`, or `never` for scripts and pipes.
+
+The palette is 24-bit when `COLORTERM` says `truecolor` or `24bit`, and
+falls back to 256-colour codes otherwise, so the hues match the demo.
 
 ## Languages
 

@@ -157,3 +157,48 @@ assert_draw () {
 	[ "$status" -eq 2 ]
 	[[ "$output" == *"unknown argument: --nope"* ]]
 }
+
+@test "writes plain output on a pipe by default" {
+	run "$SCRIPT"
+	[ "$status" -eq 0 ]
+	[[ "$output" != *$'\e['* ]]
+}
+
+@test "emits 256-colour escapes when forced" {
+	run env -u COLORTERM EUROMILLIONS_COLOR=always "$SCRIPT"
+	[ "$status" -eq 0 ]
+	[[ "$output" == *$'\e[38;5;247mNumbers:'* ]]
+	[[ "$output" == *$'\e[1;38;5;69m'* ]]
+	[[ "$output" == *$'\e[1;38;5;220m'* ]]
+}
+
+@test "honours EUROMILLIONS_COLOR=never" {
+	run env EUROMILLIONS_COLOR=never "$SCRIPT"
+	[ "$status" -eq 0 ]
+	[[ "$output" != *$'\e['* ]]
+}
+
+@test "lets --no-color win over the environment" {
+	run env EUROMILLIONS_COLOR=always "$SCRIPT" --no-color
+	[ "$status" -eq 0 ]
+	[[ "$output" != *$'\e['* ]]
+}
+
+@test "prefers truecolor escapes when COLORTERM allows them" {
+	run env COLORTERM=truecolor EUROMILLIONS_COLOR=always "$SCRIPT"
+	[ "$status" -eq 0 ]
+	[[ "$output" == *$'\e[1;38;2;77;107;255m'* ]]
+	[[ "$output" == *$'\e[1;38;2;238;187;5m'* ]]
+}
+
+@test "colours the error messages" {
+	run env PATH=/nonexistent EUROMILLIONS_COLOR=always /bin/bash "$SCRIPT"
+	[ "$status" -eq 1 ]
+	[[ "$output" == *$'\e[1;38;5;203mdraw failed: Numbers'* ]]
+}
+
+@test "rejects an invalid colour mode" {
+	run env EUROMILLIONS_COLOR=sometimes "$SCRIPT"
+	[ "$status" -eq 2 ]
+	[[ "$output" == *"invalid EUROMILLIONS_COLOR: sometimes"* ]]
+}

@@ -91,7 +91,8 @@ terminal-svg-demo assets/demo.json assets/demo.svg
 ```
 
 It animates with SMIL, so it needs no player and no JavaScript. Update
-`assets/demo.json` when the outputs or the palette change.
+`assets/demo.json` when the outputs or the palette change. The spec accepts
+whole-line `//` comments; use them to name each colour.
 
 ## Code conventions
 

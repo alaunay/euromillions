@@ -144,6 +144,12 @@ Signed-off-by: Name <email>
 - The hook is a guard against mistakes, not a barrier. `git commit
   --no-verify` bypasses it.
 
+### Pull requests
+
+`master` takes pull requests only. Push a branch, open a pull request, and
+merge it once the `bats` check is green. Direct pushes are rejected, and
+force pushes are disabled.
+
 ### Commit messages
 
 - Subject line in the imperative mood, no trailing period.

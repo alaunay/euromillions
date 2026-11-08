@@ -88,6 +88,19 @@ Co-authored-by: Name <email>
 Signed-off-by: Name <email>
 ```
 
+### Enforcement
+
+- `master` requires GPG-signed commits. The rule is remote, applies to
+  administrators, and rejects an unsigned push. `commit.gpgsign` must be
+  true and the signing key must be registered on GitHub.
+- The DCO app checks both trailers on pull requests, and only there. A
+  direct push is not covered by the app.
+- `.githooks/commit-msg` rejects a commit with a missing or malformed
+  trailer, or a `Signed-off-by` address that differs from the committer.
+  Enable it per clone with `git config core.hooksPath .githooks`.
+- The hook is a guard against mistakes, not a barrier. `git commit
+  --no-verify` bypasses it.
+
 ### Commit messages
 
 - Subject line in the imperative mood, no trailing period.

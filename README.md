@@ -1,75 +1,100 @@
+<div align="center">
+
 # euromillions
 
-Bash script to draw random Euromillions numbers and stars.
+**Five numbers, two stars, straight from your terminal.**
 
-## Requirements
+[![tests](https://github.com/alaunay/euromillions/actions/workflows/tests.yml/badge.svg)](https://github.com/alaunay/euromillions/actions/workflows/tests.yml)
+[![license](https://img.shields.io/github/license/alaunay/euromillions?style=flat-square)](LICENSE)
+[![bash 4+](https://img.shields.io/badge/bash-4%2B-1f425f?style=flat-square&logo=gnubash&logoColor=white)](#requirements)
 
-- bash 4 or later
-- GNU coreutils, for `shuf` and `sort`
+<img src="assets/demo.svg" alt="Terminal session: ./euromillions.sh prints Numbers and Stars, then the same draw in French" width="720">
 
-`shuf` is part of GNU coreutils. It ships with Linux and is absent from
-macOS, where coreutils must be installed separately.
+</div>
+
+A small Bash script that draws a Euromillions grid: five distinct numbers
+from 1 to 50 and two distinct stars from 1 to 12, sorted. No network, no
+config file, no build step.
+
+## Quick start
+
+```console
+$ git clone https://github.com/alaunay/euromillions.git
+$ cd euromillions
+$ ./euromillions.sh
+Numbers: 4 8 13 36 46
+Stars: 3 12
+```
 
 ## Usage
 
-```
-./euromillions.sh [-l CODE | --lang CODE] [-h | --help]
-```
-
-Draws 5 numbers from 1 to 50 and 2 stars from 1 to 12. The values are
-distinct and printed in ascending order.
-
-```
-$ ./euromillions.sh
-Numbers: 3 8 11 20 41
-Stars: 7 8
+```console
+$ ./euromillions.sh [-l CODE | --lang CODE] [-h | --help]
 ```
 
-`-h` prints the options and the list of available languages.
+| Option | Effect |
+| --- | --- |
+| `-l, --lang CODE` | Set the output language, overriding the locale |
+| `-h, --help` | Show the options and the available languages |
+
+Draws are independent, uniform, and read from `/dev/urandom`. Every run
+gives a new grid.
 
 ## Languages
 
-Output is translated through catalogues in `lang/`, one file per
-language. English (`en`) and French (`fr`) are provided.
+| Code | Language |
+| --- | --- |
+| `en` | English |
+| `fr` | Français |
 
-```
+```console
 $ ./euromillions.sh --lang fr
-Numéros: 2 9 17 36 44
-Étoiles: 3 11
+Numéros: 17 19 20 27 48
+Étoiles: 5 12
 ```
 
-The language is taken from, in order: `--lang`, `EUROMILLIONS_LANG`, the
-locale (`fr_FR.UTF-8` selects French), then English. An unknown language
+The language is resolved in this order: `--lang`, `EUROMILLIONS_LANG`,
+the locale (`fr_FR.UTF-8` selects French), then English. An unknown code
 falls back to English.
 
-To add a language, copy `lang/en.sh` to `lang/xx.sh`, translate the
-values, and extend the test suite. `--help` lists the catalogues found
-in `lang/`.
+Translations live in `lang/`, one file per language:
+
+```console
+$ cp lang/en.sh lang/de.sh
+$ EUROMILLIONS_LANG=de ./euromillions.sh   # after translating the values
+```
+
+`--help` lists whatever catalogues `lang/` contains. Extend the test
+suite when you add one.
+
+## Requirements
+
+- Bash 4 or later
+- GNU coreutils, for `shuf` and `sort`
+
+`shuf` ships with Linux. It is absent from macOS, where coreutils must be
+installed separately.
 
 ## Tests
 
-The suite uses [bats](https://github.com/bats-core/bats-core):
-
-```
-bats test/euromillions.bats
+```console
+$ bats test/euromillions.bats
 ```
 
-GitHub Actions runs it on every push to `master` and on every pull
-request, in `.github/workflows/tests.yml`.
+Seventeen cases cover the output shape, the ranges, the order, the
+language resolution, and the failure paths. GitHub Actions runs the same
+suite on every push to `master` and on every pull request, in
+[`.github/workflows/tests.yml`](.github/workflows/tests.yml).
 
-## Limitations
-
-- Only English and French are translated.
-- The output is plain text on stdout. There is no structured or
-  machine-readable format.
+`RANDOM_SOURCE` points `shuf` at another entropy file, which makes a draw
+reproducible.
 
 ## Disclaimer
 
-The script is not affiliated with EuroMillions or with any lottery
-operator. It predicts nothing: every draw has the same odds, and the
-output is for entertainment only.
+Not affiliated with EuroMillions or with any lottery operator. It
+predicts nothing: every grid has the same odds, and the output is for
+entertainment only.
 
 ## License
 
-GPL-3.0, see [LICENSE](LICENSE) or
-<https://www.gnu.org/licenses/gpl-3.0.html>.
+[GPL-3.0](LICENSE), or <https://www.gnu.org/licenses/gpl-3.0.html>.

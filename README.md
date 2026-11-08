@@ -179,6 +179,24 @@ Not affiliated with EuroMillions or with any lottery operator. It
 predicts nothing: every grid has the same odds, and the output is for
 entertainment only.
 
+## Contributing
+
+`master` only takes pull requests, and every pull request must:
+
+- be GPG-signed, or GitHub rejects the push;
+- carry `Co-authored-by` and `Signed-off-by` trailers, which the DCO check
+  enforces on the pull request;
+- pass the `bats` check, which runs shellcheck, generates the French
+  locale, builds the catalogues, and runs the suite.
+
+```console
+$ git switch -c my-change
+$ ...edit, commit, test...
+$ git push -u origin my-change
+$ gh pr create --fill
+$ gh pr merge --squash --delete-branch
+```
+
 ## License
 
 [GPL-3.0](LICENSE), or <https://www.gnu.org/licenses/gpl-3.0.html>.

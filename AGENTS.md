@@ -34,7 +34,7 @@ and [shellcheck](https://www.shellcheck.net/). Both are required, and CI
 fails on a missing binary as well as on a finding:
 
 ```
-bats test/euromillions.bats
+bats test test/shell
 shellcheck euromillions.sh .githooks/commit-msg tools/build-locales.sh
 ```
 
@@ -42,7 +42,9 @@ shellcheck euromillions.sh .githooks/commit-msg tools/build-locales.sh
 file makes a draw reproducible, which the tests use. The default is
 `/dev/urandom`.
 
-The suite runs the shellcheck command as one of its cases.
+The suite runs the shellcheck command as one of its cases. `test/shell/`
+covers `tools/build-locales.sh` in a sandbox and `.githooks/commit-msg` in
+a throwaway repository.
 
 GitHub Actions runs shellcheck and the suite on every push to `master`
 and on every pull request, in `.github/workflows/tests.yml`.

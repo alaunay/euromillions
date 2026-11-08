@@ -4,17 +4,26 @@
 
 **Five numbers, two stars, straight from your terminal.**
 
+<br>
+
 [![tests](https://github.com/alaunay/euromillions/actions/workflows/tests.yml/badge.svg)](https://github.com/alaunay/euromillions/actions/workflows/tests.yml)
 [![license](https://img.shields.io/github/license/alaunay/euromillions?style=flat-square)](LICENSE)
 [![bash 4+](https://img.shields.io/badge/bash-4%2B-1f425f?style=flat-square&logo=gnubash&logoColor=white)](#requirements)
 
+<br>
+<br>
+
 <img src="assets/demo.svg" alt="Animated terminal session: ./euromillions.sh prints Numbers and Stars, then the same draw in French" width="720">
+
+<br>
 
 </div>
 
 A small Bash script that draws a Euromillions grid: five distinct numbers
 from 1 to 50 and two distinct stars from 1 to 12, sorted. No network, no
 config file, no build step.
+
+---
 
 ## Quick start
 
@@ -25,6 +34,8 @@ $ ./euromillions.sh
 Numbers: 4 8 13 36 46
 Stars: 3 12
 ```
+
+---
 
 ## Usage
 
@@ -39,7 +50,9 @@ $ ./euromillions.sh [-l CODE | --lang CODE] [--no-color] [-h | --help]
 | `-h, --help` | Show the options and the available languages, in the selected language |
 
 Draws are independent, uniform, and read from `/dev/urandom`. Every run
-gives a new grid. Labels are muted, numbers in the EuroMillions blue and stars in the
+gives a new grid.
+
+Labels are muted, numbers use the EuroMillions blue and stars the
 EuroMillions gold, as on the FDJ grid.
 
 Colours are used only when the output goes to a terminal. `NO_COLOR`
@@ -48,6 +61,8 @@ accepts `auto`, `always`, or `never` for scripts and pipes.
 
 The palette is 24-bit when `COLORTERM` says `truecolor` or `24bit`, and
 falls back to 256-colour codes otherwise, so the hues match the demo.
+
+---
 
 ## Configuration
 
@@ -68,6 +83,8 @@ $ COUNTNUMBERS=3 NUMBERSUP=10 ./euromillions.sh
 Numbers: 2 6 9
 Stars: 4 11
 ```
+
+---
 
 ## Languages
 
@@ -132,6 +149,8 @@ Numbers: 4 9 42 45 46
 Stars: 1 7
 ```
 
+---
+
 ## Requirements
 
 - Bash 4 or later
@@ -141,6 +160,8 @@ Stars: 1 7
 `shuf` ships with Linux. It is absent from macOS, where coreutils must be
 installed separately. Without `gettext`, or without the language's
 catalogue, the output stays English and a warning names the language.
+
+---
 
 ## Tests
 
@@ -164,6 +185,8 @@ and the suite on every push to `master` and on every pull request, in
 `RANDOM_SOURCE` points `shuf` at another entropy file, which makes a draw
 reproducible.
 
+---
+
 ## Demo
 
 The animation at the top is declarative SVG, not a recording and not a
@@ -173,11 +196,15 @@ GIF, so every browser plays it inline without a media player:
 $ python3 tools/make-demo.py
 ```
 
+---
+
 ## Disclaimer
 
 Not affiliated with EuroMillions or with any lottery operator. It
 predicts nothing: every grid has the same odds, and the output is for
 entertainment only.
+
+---
 
 ## Contributing
 
@@ -196,6 +223,8 @@ $ git push -u origin my-change
 $ gh pr create --fill
 $ gh pr merge --squash --delete-branch
 ```
+
+---
 
 ## License
 

@@ -26,6 +26,9 @@ bats test/euromillions.bats
 file makes a draw reproducible, which the tests use. The default is
 `/dev/urandom`.
 
+GitHub Actions runs the suite on every push to `master` and on every
+pull request, in `.github/workflows/tests.yml`.
+
 Configuration lives in the variables at the top of the script.
 
 ## Code conventions

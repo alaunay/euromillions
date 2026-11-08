@@ -1,54 +1,45 @@
 #!/usr/bin/env python3
-"""Render assets/demo.gif, the terminal animation used by the README.
+"""Render assets/demo.svg, the terminal animation used by the README.
 
-The frames are drawn with Pillow so the result is reproducible and needs
-no terminal recorder. Run from the repository root:
+The animation is declarative SVG (SMIL), so every renderer plays it
+without a media player and without JavaScript. Run from the repository
+root:
 
     python3 tools/make-demo.py
 """
 
 from pathlib import Path
-
-from PIL import Image, ImageDraw, ImageFont
+from xml.sax.saxutils import escape
 
 WIDTH, HEIGHT = 720, 306
 TITLE_BAR = 40
-BACKGROUND = (13, 17, 23)
-TITLE_BACKGROUND = (22, 27, 34)
-TITLE_TEXT = (139, 148, 158)
-PROMPT = (63, 185, 80)
-COMMAND = (201, 209, 217)
-LABEL = (139, 148, 158)
-NUMBERS = (88, 166, 255)
-STARS = (210, 168, 255)
-CURSOR = (201, 209, 217)
+CYCLE = 12.0
 
-FONT_CANDIDATES = (
-    "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
-    "/usr/share/fonts/TTF/DejaVuSansMono.ttf",
-    "/usr/share/fonts/truetype/noto/NotoMono-Regular.ttf",
-)
+BACKGROUND = "#0d1117"
+TITLE_BACKGROUND = "#161b22"
+TITLE_TEXT = "#8b949e"
+PROMPT = "#3fb950"
+COMMAND = "#c9d1d9"
+LABEL = "#8b949e"
+NUMBERS = "#58a6ff"
+STARS = "#d2a8ff"
+CURSOR = "#c9d1d9"
 
+FONT = "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
 FONT_SIZE = 15
-LINE_HEIGHT = 28
+CHAR_WIDTH = 9.0
 LEFT = 28
+PROMPT_WIDTH = 18
+TEXT_START = LEFT + PROMPT_WIDTH
 VALUE_COLUMN = 112
 FIRST_LINE = 72
+LINE_HEIGHT = 28
+CURSOR_INSET = 2
 
-TYPING_DELAY = 55
-PAUSE = 400
-LINE_PAUSE = 350
-HOLD = 2600
-
-
-def load_font():
-    for path in FONT_CANDIDATES:
-        if Path(path).exists():
-            return ImageFont.truetype(path, FONT_SIZE)
-    return ImageFont.load_default()
-
-
-FONT = load_font()
+TYPING = 0.055
+START_ONE = 0.35
+START_TWO = 2.95
+HOLD = 11.4
 
 COMMAND_ONE = "./euromillions.sh"
 OUTPUT_ONE = [("Numbers:", "4 8 13 36 46", NUMBERS), ("Stars:", "3 12", STARS)]
@@ -56,98 +47,134 @@ COMMAND_TWO = "./euromillions.sh --lang fr"
 OUTPUT_TWO = [("Numéros:", "17 19 20 27 48", NUMBERS), ("Étoiles:", "5 12", STARS)]
 
 
-def window():
-    image = Image.new("RGB", (WIDTH, HEIGHT), BACKGROUND)
-    draw = ImageDraw.Draw(image)
-
-    draw.rectangle((0, 0, WIDTH, TITLE_BAR), fill=TITLE_BACKGROUND)
-    for index, color in enumerate(((255, 95, 86), (255, 189, 46), (39, 201, 63))):
-        cx = 24 + index * 20
-        draw.ellipse((cx - 6, TITLE_BAR // 2 - 6, cx + 6, TITLE_BAR // 2 + 6), fill=color)
-
-    title = "euromillions"
-    width = draw.textlength(title, font=FONT)
-    draw.text(((WIDTH - width) / 2, 11), title, font=FONT, fill=TITLE_TEXT)
-    return image
+def key(time):
+    """Normalise a time in seconds to the animation cycle."""
+    return round(time / CYCLE, 4)
 
 
-def prompt_line(draw, y, command, cursor):
-    draw.text((LEFT, y), "$", font=FONT, fill=PROMPT)
-    start = LEFT + draw.textlength("$ ", font=FONT)
-    draw.text((start, y), command, font=FONT, fill=COMMAND)
-    if cursor:
-        x = start + draw.textlength(command, font=FONT) + 2
-        draw.rectangle((x, y - 2, x + 8, y + FONT_SIZE + 2), fill=CURSOR)
-
-
-def output_line(draw, y, label, value, color):
-    draw.text((LEFT, y), label, font=FONT, fill=LABEL)
-    draw.text((VALUE_COLUMN, y), value, font=FONT, fill=color)
-
-
-def frame(command_one="", cursor_one=False, show_one=0, command_two="", cursor_two=False, show_two=0, show_prompt_two=False):
-    image = window()
-    draw = ImageDraw.Draw(image)
-
-    prompt_line(draw, FIRST_LINE, command_one, cursor_one)
-    for index, (label, value, color) in enumerate(OUTPUT_ONE[:show_one]):
-        output_line(draw, FIRST_LINE + (index + 1) * LINE_HEIGHT, label, value, color)
-
-    if show_prompt_two:
-        prompt_line(draw, FIRST_LINE + 4 * LINE_HEIGHT, command_two, cursor_two)
-    for index, (label, value, color) in enumerate(OUTPUT_TWO[:show_two]):
-        output_line(draw, FIRST_LINE + (5 + index) * LINE_HEIGHT, label, value, color)
-
-    return image
-
-
-def build():
-    """Return frames as (image, delay in ms) pairs."""
-    frames = []
-
-    def add(delay, **kwargs):
-        frames.append((frame(**kwargs), delay))
-
-    add(PAUSE)
-    for end in range(1, len(COMMAND_ONE) + 1):
-        add(TYPING_DELAY, command_one=COMMAND_ONE[:end], cursor_one=True)
-    add(PAUSE, command_one=COMMAND_ONE)
-    add(LINE_PAUSE, command_one=COMMAND_ONE, show_one=1)
-    add(LINE_PAUSE * 3, command_one=COMMAND_ONE, show_one=2)
-
-    add(200, command_one=COMMAND_ONE, show_one=2, cursor_two=True, show_prompt_two=True)
-    for end in range(1, len(COMMAND_TWO) + 1):
-        add(TYPING_DELAY, command_one=COMMAND_ONE, show_one=2, command_two=COMMAND_TWO[:end], cursor_two=True, show_prompt_two=True)
-    add(PAUSE, command_one=COMMAND_ONE, show_one=2, command_two=COMMAND_TWO, show_prompt_two=True)
-    add(LINE_PAUSE, command_one=COMMAND_ONE, show_one=2, command_two=COMMAND_TWO, show_two=1, show_prompt_two=True)
-    add(LINE_PAUSE * 3, command_one=COMMAND_ONE, show_one=2, command_two=COMMAND_TWO, show_two=2, show_prompt_two=True)
-
-    for _ in range(3):
-        add(HOLD // 3 + 1, command_one=COMMAND_ONE, show_one=2, command_two=COMMAND_TWO, show_two=2, cursor_two=True, show_prompt_two=True)
-        add(HOLD // 3 + 1, command_one=COMMAND_ONE, show_one=2, command_two=COMMAND_TWO, show_two=2, cursor_two=False, show_prompt_two=True)
-
-    return frames
-
-
-def save(frames, path):
-    # A small adaptive palette (16 colours) smears the antialiased text
-    # into greys, so keep enough entries for the accent colours
-    palette = frames[-1][0].quantize(colors=128)
-    images = [image.quantize(palette=palette, dither=Image.Dither.NONE) for image, _ in frames]
-    durations = [delay for _, delay in frames]
-    images[0].save(
-        path,
-        save_all=True,
-        append_images=images[1:],
-        duration=durations,
-        loop=0,
-        optimize=True,
+def text(x, y, value, fill, extra=""):
+    return (
+        f'<text x="{x}" y="{y}" fill="{fill}"{extra}>'
+        f"{escape(value)}</text>"
     )
 
 
+def fade_in(at):
+    """Opacity animation: hidden until at, visible afterwards."""
+    return (
+        f'<animate attributeName="opacity" values="0;1" keyTimes="0;{key(at)}" '
+        f'dur="{CYCLE}s" calcMode="discrete" repeatCount="indefinite"/>'
+    )
+
+
+def typing(width, start, end):
+    """Clip width animation for a typewriter effect."""
+    return (
+        f'<animate attributeName="width" values="0;0;{width};{width}" '
+        f'keyTimes="0;{key(start)};{key(end)};1" dur="{CYCLE}s" '
+        f'repeatCount="indefinite"/>'
+    )
+
+
+def cursor_move(width, start, end):
+    """Cursor x position, following the typed text."""
+    return (
+        f'<animate attributeName="x" values="{TEXT_START};{TEXT_START};'
+        f'{TEXT_START + width};{TEXT_START + width}" '
+        f'keyTimes="0;{key(start)};{key(end)};1" dur="{CYCLE}s" '
+        f'repeatCount="indefinite"/>'
+    )
+
+
+def build():
+    width_one = len(COMMAND_ONE) * CHAR_WIDTH
+    width_two = len(COMMAND_TWO) * CHAR_WIDTH
+    end_one = START_ONE + len(COMMAND_ONE) * TYPING
+    end_two = START_TWO + len(COMMAND_TWO) * TYPING
+
+    out = []
+    out.append(f'<svg xmlns="http://www.w3.org/2000/svg" width="{WIDTH}" height="{HEIGHT}" '
+               f'viewBox="0 0 {WIDTH} {HEIGHT}" role="img" aria-labelledby="title desc">')
+    out.append('<title id="title">Terminal session running euromillions.sh</title>')
+    out.append('<desc id="desc">The script prints five numbers and two stars, then prints '
+               'the same draw in French.</desc>')
+
+    out.append("<defs>")
+    out.append(
+        f'<clipPath id="typing-one"><rect x="{TEXT_START}" y="{FIRST_LINE - 14}" '
+        f'width="0" height="22">{typing(width_one, START_ONE, end_one)}</rect></clipPath>'
+    )
+    out.append(
+        f'<clipPath id="typing-two"><rect x="{TEXT_START}" y="{FIRST_LINE + 4 * LINE_HEIGHT - 14}" '
+        f'width="0" height="22">{typing(width_two, START_TWO, end_two)}</rect></clipPath>'
+    )
+    out.append("</defs>")
+
+    out.append(f'<rect width="{WIDTH}" height="{HEIGHT}" rx="12" fill="{BACKGROUND}"/>')
+    out.append(f'<rect width="{WIDTH}" height="{TITLE_BAR}" rx="12" fill="{TITLE_BACKGROUND}"/>')
+    out.append(f'<rect y="{TITLE_BAR - 12}" width="{WIDTH}" height="12" fill="{TITLE_BACKGROUND}"/>')
+    for index, color in enumerate(("#ff5f56", "#ffbd2e", "#27c93f")):
+        out.append(f'<circle cx="{24 + index * 20}" cy="{TITLE_BAR // 2}" r="6" fill="{color}"/>')
+    out.append(text(WIDTH / 2, 25, "euromillions", TITLE_TEXT, ' text-anchor="middle" font-size="12"'))
+
+    out.append(f'<g font-family="{FONT}" font-size="{FONT_SIZE}">')
+
+    # First prompt and command, typed through a clip
+    out.append(text(LEFT, FIRST_LINE, "$", PROMPT))
+    out.append(f'<g clip-path="url(#typing-one)">')
+    out.append(text(TEXT_START, FIRST_LINE, COMMAND_ONE, COMMAND))
+    out.append("</g>")
+
+    # Cursor for the first command
+    out.append(
+        f'<rect x="{TEXT_START}" y="{FIRST_LINE - 13}" width="8" height="{FONT_SIZE + 4}" '
+        f'fill="{CURSOR}" opacity="0">{cursor_move(width_one, START_ONE, end_one)}'
+        f'<animate attributeName="opacity" values="1;1;0;0" keyTimes="0;{key(START_ONE)};'
+        f'{key(end_one)};1" dur="{CYCLE}s" calcMode="discrete" repeatCount="indefinite"/></rect>'
+    )
+
+    # First output
+    for index, (label, value, color) in enumerate(OUTPUT_ONE):
+        at = end_one + 0.15 + index * 0.35
+        y = FIRST_LINE + (index + 1) * LINE_HEIGHT
+        out.append(f'<g opacity="0">{fade_in(at)}')
+        out.append(text(LEFT, y, label, LABEL))
+        out.append(text(VALUE_COLUMN, y, value, color))
+        out.append("</g>")
+
+    # Second prompt, command and output
+    second_line = FIRST_LINE + 4 * LINE_HEIGHT
+    out.append(f'<g opacity="0">{fade_in(START_TWO - 0.3)}')
+    out.append(text(LEFT, second_line, "$", PROMPT))
+    out.append("</g>")
+    out.append(f'<g clip-path="url(#typing-two)">')
+    out.append(text(TEXT_START, second_line, COMMAND_TWO, COMMAND))
+    out.append("</g>")
+    out.append(
+        f'<rect x="{TEXT_START}" y="{second_line - 13}" width="8" height="{FONT_SIZE + 4}" '
+        f'fill="{CURSOR}" opacity="0">'
+        f'<animate attributeName="opacity" values="0;1" keyTimes="0;{key(START_TWO - 0.3)}" '
+        f'dur="{CYCLE}s" calcMode="discrete" repeatCount="indefinite"/>'
+        f"{cursor_move(width_two, START_TWO, end_two)}"
+        f"</rect>"
+    )
+
+    for index, (label, value, color) in enumerate(OUTPUT_TWO):
+        at = end_two + 0.15 + index * 0.35
+        y = second_line + (index + 1) * LINE_HEIGHT
+        out.append(f'<g opacity="0">{fade_in(at)}')
+        out.append(text(LEFT, y, label, LABEL))
+        out.append(text(VALUE_COLUMN, y, value, color))
+        out.append("</g>")
+
+    out.append("</g>")
+    out.append("</svg>")
+    return "\n".join(out) + "\n"
+
+
 def main():
-    target = Path(__file__).resolve().parent.parent / "assets" / "demo.gif"
-    save(build(), target)
+    target = Path(__file__).resolve().parent.parent / "assets" / "demo.svg"
+    target.write_text(build(), encoding="utf-8")
     print(f"wrote {target}")
 
 

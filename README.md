@@ -8,7 +8,7 @@
 [![license](https://img.shields.io/github/license/alaunay/euromillions?style=flat-square)](LICENSE)
 [![bash 4+](https://img.shields.io/badge/bash-4%2B-1f425f?style=flat-square&logo=gnubash&logoColor=white)](#requirements)
 
-<img src="assets/demo.gif" alt="Animated terminal session: ./euromillions.sh prints Numbers and Stars, then the same draw in French" width="720">
+<img src="assets/demo.svg" alt="Animated terminal session: ./euromillions.sh prints Numbers and Stars, then the same draw in French" width="720">
 
 </div>
 
@@ -86,7 +86,8 @@ resolution, and the failure paths. GitHub Actions runs it on every push
 to `master` and on every pull request, in
 [`.github/workflows/tests.yml`](.github/workflows/tests.yml).
 
-The animation above is generated from Pillow, not recorded:
+The animation above is declarative SVG, not a recording and not a GIF,
+so every browser plays it inline without a media player:
 
 ```console
 $ python3 tools/make-demo.py

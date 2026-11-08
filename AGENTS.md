@@ -33,8 +33,9 @@ file makes a draw reproducible, which the tests use. The default is
 GitHub Actions runs the suite on every push to `master` and on every
 pull request, in `.github/workflows/tests.yml`.
 
-`assets/demo.gif`, the animation used by the README, is generated with
-`python3 tools/make-demo.py` and needs Pillow.
+`assets/demo.svg`, the animation used by the README, is generated with
+`python3 tools/make-demo.py`, plain Python and no dependency. It animates
+with SMIL, so it needs no player and no JavaScript.
 
 Configuration lives in the variables at the top of the script.
 

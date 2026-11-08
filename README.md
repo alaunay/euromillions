@@ -168,13 +168,17 @@ catalogue, the output stays English and a warning names the language.
 The suite needs `bats` and `shellcheck`:
 
 ```console
-$ bats test/euromillions.bats
+$ bats test test/shell
 $ shellcheck euromillions.sh .githooks/commit-msg tools/build-locales.sh
 ```
 
 The bats suite runs the shellcheck command as one of its cases, so a
 missing binary fails the case rather than skipping it. Any finding, at
 any severity, is a failure.
+
+`test/shell/` also covers the two other shell scripts: the catalogue
+builder, exercised in a sandbox, and the commit hook, exercised in a
+throwaway repository.
 
 The cases cover the output shape, the ranges, the order, the language
 resolution, and the failure paths. GitHub Actions installs both tools,

@@ -33,6 +33,9 @@ file makes a draw reproducible, which the tests use. The default is
 GitHub Actions runs the suite on every push to `master` and on every
 pull request, in `.github/workflows/tests.yml`.
 
+`assets/demo.gif`, the animation used by the README, is generated with
+`python3 tools/make-demo.py` and needs Pillow.
+
 Configuration lives in the variables at the top of the script.
 
 ## Code conventions

@@ -8,7 +8,7 @@
 [![license](https://img.shields.io/github/license/alaunay/euromillions?style=flat-square)](LICENSE)
 [![bash 4+](https://img.shields.io/badge/bash-4%2B-1f425f?style=flat-square&logo=gnubash&logoColor=white)](#requirements)
 
-<img src="assets/demo.svg" alt="Terminal session: ./euromillions.sh prints Numbers and Stars, then the same draw in French" width="720">
+<img src="assets/demo.gif" alt="Animated terminal session: ./euromillions.sh prints Numbers and Stars, then the same draw in French" width="720">
 
 </div>
 
@@ -81,10 +81,16 @@ installed separately.
 $ bats test/euromillions.bats
 ```
 
-Seventeen cases cover the output shape, the ranges, the order, the
-language resolution, and the failure paths. GitHub Actions runs the same
-suite on every push to `master` and on every pull request, in
+The suite covers the output shape, the ranges, the order, the language
+resolution, and the failure paths. GitHub Actions runs it on every push
+to `master` and on every pull request, in
 [`.github/workflows/tests.yml`](.github/workflows/tests.yml).
+
+The animation above is generated from Pillow, not recorded:
+
+```console
+$ python3 tools/make-demo.py
+```
 
 `RANDOM_SOURCE` points `shuf` at another entropy file, which makes a draw
 reproducible.

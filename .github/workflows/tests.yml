@@ -14,10 +14,13 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Install bats
+      - name: Install bats and shellcheck
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq bats
+          sudo apt-get install -y -qq bats shellcheck
+
+      - name: Run shellcheck
+        run: shellcheck euromillions.sh .githooks/commit-msg lang/*.sh
 
       - name: Run the test suite
         run: bats test/euromillions.bats

@@ -1,3 +1,4 @@
+# shellcheck shell=bash disable=SC2034
 # Messages français.
 
 MSG_NUMBERS="Numéros"

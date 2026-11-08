@@ -1,3 +1,4 @@
+# shellcheck shell=bash disable=SC2034
 # English messages, the fallback language.
 
 MSG_NUMBERS="Numbers"

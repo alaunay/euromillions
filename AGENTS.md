@@ -30,8 +30,15 @@ bats test/euromillions.bats
 file makes a draw reproducible, which the tests use. The default is
 `/dev/urandom`.
 
-GitHub Actions runs the suite on every push to `master` and on every
-pull request, in `.github/workflows/tests.yml`.
+Lint with [shellcheck](https://www.shellcheck.net/), which the suite
+also runs as one case when the binary is available:
+
+```
+shellcheck euromillions.sh .githooks/commit-msg lang/*.sh
+```
+
+GitHub Actions runs shellcheck and the suite on every push to `master`
+and on every pull request, in `.github/workflows/tests.yml`.
 
 `assets/demo.svg`, the animation used by the README, is generated with
 `python3 tools/make-demo.py`, plain Python and no dependency. It animates

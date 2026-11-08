@@ -51,7 +51,12 @@ truecolor () {
 }
 
 setup_colors () {
-	RESET= LABEL_COLOR= NUMBERS_COLOR= STARS_COLOR= ERROR_COLOR= ERROR_RESET=
+	RESET=
+	LABEL_COLOR=
+	NUMBERS_COLOR=
+	STARS_COLOR=
+	ERROR_COLOR=
+	ERROR_RESET=
 
 	if use_color 1; then
 		RESET=$'\033[0m'

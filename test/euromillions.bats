@@ -202,3 +202,10 @@ assert_draw () {
 	[ "$status" -eq 2 ]
 	[[ "$output" == *"invalid EUROMILLIONS_COLOR: sometimes"* ]]
 }
+
+@test "passes shellcheck" {
+	command -v shellcheck >/dev/null || skip "shellcheck is not installed"
+	root=$(cd -- "${BATS_TEST_DIRNAME}/.." && pwd)
+	run shellcheck "$root/euromillions.sh" "$root/.githooks/commit-msg" "$root"/lang/*.sh
+	[ "$status" -eq 0 ]
+}

@@ -50,16 +50,16 @@ and on every pull request, in `.github/workflows/tests.yml`.
 ## Demo
 
 `assets/demo.svg`, the animation used by the README, comes from the
-[euromillions-demo](https://github.com/alaunay/euromillions-demo)
-repository:
+[terminal-svg-demo](https://github.com/alaunay/terminal-svg-demo)
+repository, driven by `assets/demo.json`:
 
 ```
-git clone https://github.com/alaunay/euromillions-demo.git
-python3 euromillions-demo/make_demo.py assets/demo.svg
+git clone https://github.com/alaunay/terminal-svg-demo.git
+python3 terminal-svg-demo/make_demo.py assets/demo.json assets/demo.svg
 ```
 
-It animates with SMIL, so it needs no player and no JavaScript. Update its
-palette constants when this script's colours change.
+It animates with SMIL, so it needs no player and no JavaScript. Update
+`assets/demo.json` when the outputs or the palette change.
 
 ## Code conventions
 

@@ -193,17 +193,17 @@ The animation at the top is declarative SVG, not a recording and not a
 GIF, so every browser plays it inline without a media player.
 
 The generator lives in its own repository,
-[euromillions-demo](https://github.com/alaunay/euromillions-demo). It is
-not needed to run the script, only to refresh the image:
+[terminal-svg-demo](https://github.com/alaunay/terminal-svg-demo). It is
+not needed to run the script, only to refresh the image. `assets/demo.json`
+holds the content: commands, outputs, and colours.
 
 ```console
-$ git clone https://github.com/alaunay/euromillions-demo.git
-$ python3 euromillions-demo/make_demo.py assets/demo.svg
+$ git clone https://github.com/alaunay/terminal-svg-demo.git
+$ python3 terminal-svg-demo/make_demo.py assets/demo.json assets/demo.svg
 ```
 
-The generator needs Python 3.8 or later and no third-party package. Its
-draw values and palette are constants; keep them in step with the
-script's constants and colour section when the palette changes.
+The generator needs Python 3.8 or later and no third-party package. Update
+`assets/demo.json` when the outputs or the palette change.
 
 ---
 

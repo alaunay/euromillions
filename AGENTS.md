@@ -49,6 +49,19 @@ a throwaway repository.
 GitHub Actions runs shellcheck and the suite on every push to `master`
 and on every pull request, in `.github/workflows/tests.yml`.
 
+## Metadata
+
+`metadata.json` follows the OpenVox module metadata format: name, version,
+sources, dependencies, and `operating_system_support`. Update the system
+list when a supported platform changes, then run:
+
+```
+python3 tools/check-metadata.py
+```
+
+CI validates it. The supported list is the contract; the CI jobs for
+Linux, macOS, and FreeBSD must agree with it.
+
 ## Packaging
 
 `debian/` builds a Debian package with `dpkg-buildpackage -b -us -uc`;

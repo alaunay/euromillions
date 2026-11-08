@@ -1,0 +1,43 @@
+{
+  "name": "alaunay-euromillions",
+  "version": "1.0.0",
+  "author": "Arnaud Launay",
+  "summary": "Draw EuroMillions grids from the terminal",
+  "license": "GPL-3.0-or-later",
+  "source": "https://github.com/alaunay/euromillions",
+  "project_page": "https://github.com/alaunay/euromillions",
+  "issues_url": "https://github.com/alaunay/euromillions/issues",
+  "dependencies": [],
+  "requirements": [
+    {
+      "name": "bash",
+      "version_requirement": ">= 4.0.0"
+    }
+  ],
+  "operating_system_support": [
+    {
+      "operating_system": "Debian",
+      "min_version": "12"
+    },
+    {
+      "operating_system": "Ubuntu",
+      "min_version": "24.04"
+    },
+    {
+      "operating_system": "RedHat",
+      "min_version": "9"
+    },
+    {
+      "operating_system": "CentOS",
+      "min_version": "9"
+    },
+    {
+      "operating_system": "FreeBSD",
+      "min_version": "14"
+    },
+    {
+      "operating_system": "Darwin",
+      "min_version": "14"
+    }
+  ]
+}

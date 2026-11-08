@@ -14,13 +14,19 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Install bats and shellcheck
+      - name: Install the tools
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq bats shellcheck
+          sudo apt-get install -y -qq bats shellcheck gettext locales
+
+      - name: Generate the French locale
+        run: sudo locale-gen fr_FR.UTF-8
+
+      - name: Build the catalogues
+        run: tools/build-locales.sh
 
       - name: Run shellcheck
-        run: shellcheck euromillions.sh .githooks/commit-msg lang/*.sh
+        run: shellcheck euromillions.sh .githooks/commit-msg tools/build-locales.sh
 
       - name: Run the test suite
         run: bats test/euromillions.bats

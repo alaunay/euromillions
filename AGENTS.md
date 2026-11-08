@@ -13,10 +13,15 @@ Run it with:
 ./euromillions.sh [--lang CODE]
 ```
 
-Output strings live in `lang/*.sh`, one file per language. The script
-sources `lang/CODE.sh`, where CODE comes from `--lang`, then
-`EUROMILLIONS_LANG`, then the locale, then `en`. An unknown code falls
-back to `en`. Add a language by copying `lang/en.sh` to `lang/xx.sh`.
+Output strings are gettext msgids in `euromillions.sh`. Translations
+live in `po/`, with `po/euromillions.pot` as the template. `CODE` comes
+from `--lang`, then `EUROMILLIONS_LANG`, then the locale, then `en`. An
+unknown code falls back to `en`, and a missing gettext binary prints the
+msgids.
+
+Run `tools/build-locales.sh` after editing a `.po`; it compiles to
+`locale/CODE/LC_MESSAGES/euromillions.mo`, which is ignored by git. CI
+builds it too.
 
 ## Tests
 

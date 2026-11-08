@@ -1,0 +1,67 @@
+# Translation template for euromillions.
+# Copyright (C) 2026 Arnaud Launay
+# This file is distributed under the same licence as the project.
+msgid ""
+msgstr ""
+"Project-Id-Version: euromillions\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-08 21:00+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: euromillions.sh
+msgid "Numbers"
+msgstr ""
+
+#: euromillions.sh
+msgid "Stars"
+msgstr ""
+
+#: euromillions.sh
+msgid "draw failed"
+msgstr ""
+
+#: euromillions.sh
+msgid "short draw"
+msgstr ""
+
+#: euromillions.sh
+msgid "Usage:"
+msgstr ""
+
+#: euromillions.sh
+msgid "Draw %s numbers from %s to %s and %s stars from %s to %s."
+msgstr ""
+
+#: euromillions.sh
+msgid "Options:"
+msgstr ""
+
+#: euromillions.sh
+msgid "output language, overriding the locale"
+msgstr ""
+
+#: euromillions.sh
+msgid "never use colours"
+msgstr ""
+
+#: euromillions.sh
+msgid "show this help"
+msgstr ""
+
+#: euromillions.sh
+msgid "Languages:"
+msgstr ""
+
+#: euromillions.sh
+msgid "unknown argument: %s"
+msgstr ""
+
+#: euromillions.sh
+msgid "option %s needs a language code"
+msgstr ""

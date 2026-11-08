@@ -1,0 +1,55 @@
+# Traduction française de euromillions.
+# Copyright (C) 2026 Arnaud Launay
+# This file is distributed under the same licence as the project.
+msgid ""
+msgstr ""
+"Project-Id-Version: euromillions\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-08 21:00+0100\n"
+"PO-Revision-Date: 2026-11-08 21:00+0100\n"
+"Last-Translator: Arnaud Launay <asl@launay.org>\n"
+"Language-Team: French\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "Numbers"
+msgstr "Numéros"
+
+msgid "Stars"
+msgstr "Étoiles"
+
+msgid "draw failed"
+msgstr "tirage impossible"
+
+msgid "short draw"
+msgstr "tirage incomplet"
+
+msgid "Usage:"
+msgstr "Utilisation :"
+
+msgid "Draw %s numbers from %s to %s and %s stars from %s to %s."
+msgstr "Tirer %s numéros de %s à %s et %s étoiles de %s à %s."
+
+msgid "Options:"
+msgstr "Options :"
+
+msgid "output language, overriding the locale"
+msgstr "langue de sortie, prioritaire sur la locale"
+
+msgid "never use colours"
+msgstr "ne jamais utiliser de couleurs"
+
+msgid "show this help"
+msgstr "afficher cette aide"
+
+msgid "Languages:"
+msgstr "Langues :"
+
+msgid "unknown argument: %s"
+msgstr "argument inconnu : %s"
+
+msgid "option %s needs a language code"
+msgstr "l'option %s attend un code de langue"

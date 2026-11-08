@@ -100,9 +100,10 @@ suite when you add one.
 
 - Bash 4 or later
 - GNU coreutils, for `shuf` and `sort`
+- gettext, for a language other than English, plus that language's locale
 
 `shuf` ships with Linux. It is absent from macOS, where coreutils must be
-installed separately.
+installed separately. Without `gettext`, the output stays English.
 
 ## Tests
 

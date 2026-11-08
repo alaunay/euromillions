@@ -5,10 +5,22 @@
 # Run with "bats test/euromillions.bats".
 
 SCRIPT="${BATS_TEST_DIRNAME}/../euromillions.sh"
+ROOT=$(cd -- "${BATS_TEST_DIRNAME}/.." && pwd)
 
 # Pin the locale: the default output must be English whatever the host
 export LC_ALL=C
 export LANG=C
+
+setup_file () {
+	# French cases need the compiled catalogue
+	"${ROOT}/tools/build-locales.sh" >/dev/null 2>&1 || true
+}
+
+# Skip when msgfmt was unavailable and the catalogue is missing
+require_translation () {
+	[ -f "${ROOT}/locale/fr/LC_MESSAGES/euromillions.mo" ] ||
+		skip "the french catalogue is not built"
+}
 
 numbers_line () {
 	printf '%s\n' "$output" | sed -n 's/^Numbers: //p'
@@ -95,6 +107,7 @@ assert_draw () {
 }
 
 @test "prints french labels with --lang fr" {
+	require_translation
 	run "$SCRIPT" --lang fr
 	[ "$status" -eq 0 ]
 	[ "${#lines[@]}" -eq 2 ]
@@ -105,18 +118,21 @@ assert_draw () {
 }
 
 @test "accepts the --lang=CODE form" {
+	require_translation
 	run "$SCRIPT" --lang=fr
 	[ "$status" -eq 0 ]
 	[[ "$output" == Numéros:* ]]
 }
 
 @test "reads the language from EUROMILLIONS_LANG" {
+	require_translation
 	run env EUROMILLIONS_LANG=fr "$SCRIPT"
 	[ "$status" -eq 0 ]
 	[[ "$output" == Numéros:* ]]
 }
 
 @test "detects the language from the locale" {
+	require_translation
 	run env -u LC_ALL -u EUROMILLIONS_LANG LANG=fr_FR.UTF-8 "$SCRIPT"
 	[ "$status" -eq 0 ]
 	[[ "$output" == Numéros:* ]]
@@ -135,7 +151,8 @@ assert_draw () {
 }
 
 @test "translates the error messages" {
-	run env PATH=/nonexistent EUROMILLIONS_LANG=fr /bin/bash "$SCRIPT"
+	require_translation
+	run env RANDOM_SOURCE="${BATS_TEST_TMPDIR}/missing" EUROMILLIONS_LANG=fr "$SCRIPT"
 	[ "$status" -eq 1 ]
 	[[ "$output" == *"tirage impossible: Numéros"* ]]
 }
@@ -155,6 +172,7 @@ assert_draw () {
 }
 
 @test "translates the help with a --lang that follows -h" {
+	require_translation
 	run "$SCRIPT" -h -l fr
 	[ "$status" -eq 0 ]
 	[[ "$output" == *"Utilisation :"* ]]
@@ -162,12 +180,14 @@ assert_draw () {
 }
 
 @test "translates the help with a --lang that precedes -h" {
+	require_translation
 	run "$SCRIPT" --lang fr --help
 	[ "$status" -eq 0 ]
 	[[ "$output" == *"Utilisation :"* ]]
 }
 
 @test "translates the argument errors" {
+	require_translation
 	run "$SCRIPT" --lang fr --nope
 	[ "$status" -eq 2 ]
 	[[ "$output" == *"argument inconnu : --nope"* ]]
@@ -241,6 +261,6 @@ assert_draw () {
 @test "passes shellcheck" {
 	command -v shellcheck >/dev/null || skip "shellcheck is not installed"
 	root=$(cd -- "${BATS_TEST_DIRNAME}/.." && pwd)
-	run shellcheck "$root/euromillions.sh" "$root/.githooks/commit-msg" "$root"/lang/*.sh
+	run shellcheck "$root/euromillions.sh" "$root/.githooks/commit-msg" "$root/tools/build-locales.sh"
 	[ "$status" -eq 0 ]
 }

@@ -27,6 +27,9 @@ RANDOM_SOURCE=${RANDOM_SOURCE:-/dev/urandom}
 # auto, always, or never; see use_color
 COLOR_MODE=${EUROMILLIONS_COLOR:-auto}
 
+# gettext binary, empty when the package is absent; see _
+GETTEXT=$(command -v gettext || true)
+
 # Colour is off on a pipe, with NO_COLOR set, or on a dumb terminal
 use_color () {
 	local fd=$1
@@ -88,16 +91,51 @@ setup_colors () {
 	fi
 }
 
-# Build the language list from the available catalogue files
-languages () {
-	local file code list=
+# Translate a message. The msgid is the English text, so a missing
+# gettext binary still prints English.
+_ () {
+	if [ -n "${GETTEXT}" ]; then
+		"${GETTEXT}" "$1"
+	else
+		printf '%s' "$1"
+	fi
+}
 
-	for file in "${SCRIPT_DIR}"/lang/*.sh; do
+# Locale name for a catalogue code. gettext ignores LANGUAGE when the
+# locale is C, so a C locale is replaced by the language's own locale.
+locale_name () {
+	case $1 in
+		en) printf 'en_US.UTF-8' ;;
+		fr) printf 'fr_FR.UTF-8' ;;
+		*) printf '%s' "$1" ;;
+	esac
+}
+
+setup_locale () {
+	local code=$1
+
+	TEXTDOMAIN=euromillions
+	TEXTDOMAINDIR="${SCRIPT_DIR}/locale"
+	LANGUAGE=$code
+	LC_MESSAGES=$(locale_name "$code")
+	LANG=$LC_MESSAGES
+	unset LC_ALL
+	export TEXTDOMAIN TEXTDOMAINDIR LANGUAGE LC_MESSAGES LANG
+}
+
+# Build the language list: English plus every PO catalogue
+languages () {
+	local file code list=en
+
+	for file in "${SCRIPT_DIR}"/po/*.po; do
+		[ -e "$file" ] || continue
 		code=${file##*/}
-		list+="${code%.sh} "
+		code=${code%.po}
+		[ "$code" = en ] && continue
+		list+=" ${code}"
 	done
 
-	printf '%s\n' "${list% }"
+	printf '%s\n' "${list}"
 }
 
 # Fill the %s placeholders of a message, in order
@@ -114,12 +152,15 @@ format_message () {
 }
 
 usage () {
-	printf '%s %s [--lang CODE] [--no-color] [-h | --help]\n\n' "${MSG_USAGE}" "${0##*/}"
-	printf '%s\n\n' "$(format_message "${MSG_DRAW_SUMMARY}" \
+	printf '%s %s [--lang CODE] [--no-color] [-h | --help]\n\n' "$(_ 'Usage:')" "${0##*/}"
+	printf '%s\n\n' "$(format_message "$(_ 'Draw %s numbers from %s to %s and %s stars from %s to %s.')" \
 		"${COUNTNUMBERS}" "${NUMBERSDOWN}" "${NUMBERSUP}" \
 		"${COUNTSTARS}" "${STARSDOWN}" "${STARSUP}")"
-	printf '%s\n' "${MSG_OPTIONS}" "${MSG_OPT_LANG}" "${MSG_OPT_NO_COLOR}" "${MSG_OPT_HELP}"
-	printf '\n%s %s\n' "${MSG_LANGUAGES}" "$(languages)"
+	printf '%s\n' "$(_ 'Options:')"
+	printf '  -l, --lang CODE  %s\n' "$(_ 'output language, overriding the locale')"
+	printf '      --no-color   %s\n' "$(_ 'never use colours')"
+	printf '  -h, --help       %s\n' "$(_ 'show this help')"
+	printf '\n%s %s\n' "$(_ 'Languages:')" "$(languages)"
 }
 
 # Language from EUROMILLIONS_LANG, then the locale, then English
@@ -128,25 +169,6 @@ detect_language () {
 	code=${code%%.*}
 	code=${code%%_*}
 	printf '%s' "${code:-en}"
-}
-
-# Load the catalogue for code, falling back to English
-load_language () {
-	local code=$1
-	local file="${SCRIPT_DIR}/lang/${code}.sh"
-
-	if [ ! -r "$file" ]; then
-		file="${SCRIPT_DIR}/lang/en.sh"
-	fi
-
-	if [ ! -r "$file" ]; then
-		printf '%sno language catalogue in %s/lang%s\n' \
-			"${ERROR_COLOR}" "${SCRIPT_DIR}" "${ERROR_RESET}" >&2
-		exit 1
-	fi
-
-	# shellcheck source=/dev/null
-	. "$file"
 }
 
 # Draw and print count distinct values from lo to hi, sorted
@@ -161,14 +183,14 @@ draw () {
 
 	# Keep the pipeline status: process substitution would hide a failure
 	if ! output=$(shuf --random-source="${RANDOM_SOURCE}" -i "${lo}-${hi}" -n "${count}" | sort -n); then
-		printf '%s%s: %s%s\n' "${ERROR_COLOR}" "${MSG_DRAW_FAILED}" "${label}" "${ERROR_RESET}" >&2
+		printf '%s%s: %s%s\n' "${ERROR_COLOR}" "$(_ 'draw failed')" "${label}" "${ERROR_RESET}" >&2
 		exit 1
 	fi
 
 	mapfile -t draws <<< "${output}"
 
 	if (( ${#draws[@]} != count )); then
-		printf '%s%s: %s (%s/%s)%s\n' "${ERROR_COLOR}" "${MSG_SHORT_DRAW}" "${label}" \
+		printf '%s%s: %s (%s/%s)%s\n' "${ERROR_COLOR}" "$(_ 'short draw')" "${label}" \
 			"${#draws[@]}" "${count}" "${ERROR_RESET}" >&2
 		exit 1
 	fi
@@ -215,18 +237,18 @@ while (( $# )); do
 done
 
 setup_colors
-load_language "$language"
+setup_locale "$language"
 
 if [ "$error_kind" = needs_code ]; then
 	printf '%s%s%s\n' "${ERROR_COLOR}" \
-		"$(format_message "${MSG_LANG_NEEDS_CODE}" "${error_arg}")" "${ERROR_RESET}" >&2
+		"$(format_message "$(_ 'option %s needs a language code')" "${error_arg}")" "${ERROR_RESET}" >&2
 	usage >&2
 	exit 2
 fi
 
 if [ "$error_kind" = unknown ]; then
 	printf '%s%s%s\n' "${ERROR_COLOR}" \
-		"$(format_message "${MSG_UNKNOWN_ARG}" "${error_arg}")" "${ERROR_RESET}" >&2
+		"$(format_message "$(_ 'unknown argument: %s')" "${error_arg}")" "${ERROR_RESET}" >&2
 	usage >&2
 	exit 2
 fi
@@ -237,5 +259,5 @@ if (( show_help )); then
 fi
 
 # Start functions
-draw "${MSG_NUMBERS}" "${COUNTNUMBERS}" "${NUMBERSDOWN}" "${NUMBERSUP}" "${NUMBERS_COLOR}"
-draw "${MSG_STARS}" "${COUNTSTARS}" "${STARSDOWN}" "${STARSUP}" "${STARS_COLOR}"
+draw "$(_ 'Numbers')" "${COUNTNUMBERS}" "${NUMBERSDOWN}" "${NUMBERSUP}" "${NUMBERS_COLOR}"
+draw "$(_ 'Stars')" "${COUNTSTARS}" "${STARSDOWN}" "${STARSUP}" "${STARS_COLOR}"

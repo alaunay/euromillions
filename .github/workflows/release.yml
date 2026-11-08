@@ -1,0 +1,96 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  deb:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check the tag against the package version
+        run: |
+          tag=${GITHUB_REF_NAME#v}
+          version=$(sed -n '1s/.*(\(.*\)).*/\1/p' debian/changelog)
+          [ "$tag" = "$version" ] || {
+            echo "tag $tag does not match debian/changelog $version" >&2
+            exit 1
+          }
+
+      - name: Install the packaging tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq bats build-essential debhelper gettext locales shellcheck
+
+      - name: Generate the French locale
+        run: sudo locale-gen fr_FR.UTF-8
+
+      - name: Build the Debian package
+        run: |
+          dpkg-buildpackage -b -us -uc
+          mkdir -p dist
+          cp ../euromillions_*.deb dist/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: debian-package
+          path: dist/*.deb
+
+  rpm:
+    runs-on: ubuntu-latest
+    container: quay.io/centos/centos:stream10
+    steps:
+      - name: Install the packaging tools
+        run: |
+          dnf config-manager --set-enabled crb
+          dnf install -y git tar gzip rpm-build gettext
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - uses: actions/checkout@v5
+
+      - name: Check the tag against the package version
+        run: |
+          tag=${GITHUB_REF_NAME#v}
+          version=$(sed -n 's/^Version:[[:space:]]*\(.*\)/\1/p' packaging/rpm/euromillions.spec)
+          [ "$tag" = "$version" ] || {
+            echo "tag $tag does not match the spec version $version" >&2
+            exit 1
+          }
+
+      - name: Build the RPM
+        run: |
+          mkdir -p dist rpmbuild/SOURCES
+          version=${GITHUB_REF_NAME#v}
+          git archive --format=tar.gz --prefix="euromillions-$version/" \
+            --output="rpmbuild/SOURCES/euromillions-$version.tar.gz" HEAD
+          rpmbuild -bb packaging/rpm/euromillions.spec --define "_topdir $PWD/rpmbuild"
+          cp rpmbuild/RPMS/noarch/*.rpm dist/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rpm-package
+          path: dist/*.rpm
+
+  publish:
+    needs: [deb, rpm]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 ||
+            gh release create "$GITHUB_REF_NAME" \
+              --title "$GITHUB_REF_NAME" --generate-notes
+          gh release upload "$GITHUB_REF_NAME" dist/* --clobber

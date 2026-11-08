@@ -121,7 +121,7 @@ def build():
 
     # First prompt and command, typed through a clip
     out.append(text(LEFT, FIRST_LINE, "$", PROMPT))
-    out.append(f'<g clip-path="url(#typing-one)">')
+    out.append('<g clip-path="url(#typing-one)">')
     out.append(text(TEXT_START, FIRST_LINE, COMMAND_ONE, COMMAND))
     out.append("</g>")
 
@@ -147,7 +147,7 @@ def build():
     out.append(f'<g opacity="0">{fade_in(START_TWO - 0.3)}')
     out.append(text(LEFT, second_line, "$", PROMPT))
     out.append("</g>")
-    out.append(f'<g clip-path="url(#typing-two)">')
+    out.append('<g clip-path="url(#typing-two)">')
     out.append(text(TEXT_START, second_line, COMMAND_TWO, COMMAND))
     out.append("</g>")
     out.append(

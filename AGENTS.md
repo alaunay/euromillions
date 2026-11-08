@@ -29,22 +29,25 @@ builds it too.
 
 ## Tests
 
-The test suite needs [bats-core](https://github.com/bats-core/bats-core)
-and [shellcheck](https://www.shellcheck.net/). Both are required, and CI
-fails on a missing binary as well as on a finding:
+The test suite needs [bats-core](https://github.com/bats-core/bats-core),
+[shellcheck](https://www.shellcheck.net/), `python3`, and
+[ruff](https://docs.astral.sh/ruff/). All are required, and CI fails on a
+missing binary as well as on a finding:
 
 ```
 bats test/euromillions.bats
 shellcheck euromillions.sh .githooks/commit-msg tools/build-locales.sh
+python3 -m py_compile tools/make-demo.py
+ruff check tools/make-demo.py
 ```
 
 `RANDOM_SOURCE` overrides the entropy source that `shuf` reads. A fixed
 file makes a draw reproducible, which the tests use. The default is
 `/dev/urandom`.
 
-The suite runs the shellcheck command as one of its cases.
+The suite runs the shellcheck and Python commands as cases.
 
-GitHub Actions runs shellcheck and the suite on every push to `master`
+GitHub Actions runs shellcheck, ruff, and the suite on every push to `master`
 and on every pull request, in `.github/workflows/tests.yml`.
 
 ## Demo

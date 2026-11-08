@@ -39,7 +39,10 @@ jobs:
       - name: Install the packaging tools
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq bats build-essential debhelper gettext shellcheck
+          sudo apt-get install -y -qq bats build-essential debhelper gettext locales shellcheck
+
+      - name: Generate the French locale
+        run: sudo locale-gen fr_FR.UTF-8
 
       - name: Build the Debian package
         run: |
@@ -57,7 +60,9 @@ jobs:
     container: fedora:latest
     steps:
       - name: Install the packaging tools
-        run: dnf install -y git tar gzip rpm-build gettext
+        run: |
+          dnf install -y git tar gzip rpm-build gettext
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - uses: actions/checkout@v5
 

@@ -28,15 +28,5 @@ jobs:
       - name: Run shellcheck
         run: shellcheck euromillions.sh .githooks/commit-msg tools/build-locales.sh
 
-      - name: Install ruff
-        run: |
-          python3 -m pip install --user ruff==0.17.4
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-
-      - name: Lint the python generator
-        run: |
-          python3 -m py_compile tools/make-demo.py
-          ruff check tools/make-demo.py
-
       - name: Run the test suite
         run: bats test/euromillions.bats

@@ -113,7 +113,7 @@ format_message () {
 }
 
 usage () {
-	printf '%s %s [--lang CODE] [--no-color]\n\n' "${MSG_USAGE}" "${0##*/}"
+	printf '%s %s [--lang CODE] [--no-color] [-h | --help]\n\n' "${MSG_USAGE}" "${0##*/}"
 	printf '%s\n\n' "$(format_message "${MSG_DRAW_SUMMARY}" \
 		"${COUNTNUMBERS}" "${NUMBERSDOWN}" "${NUMBERSUP}" \
 		"${COUNTSTARS}" "${STARSDOWN}" "${STARSUP}")"

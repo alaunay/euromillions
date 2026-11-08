@@ -140,6 +140,14 @@ assert_draw () {
 	[[ "$output" == *"tirage impossible: Numéros"* ]]
 }
 
+@test "lists every option in the usage line" {
+	run "$SCRIPT" --help
+	[ "$status" -eq 0 ]
+	[[ "${lines[0]}" == *"[--lang CODE]"* ]]
+	[[ "${lines[0]}" == *"[--no-color]"* ]]
+	[[ "${lines[0]}" == *"[-h | --help]"* ]]
+}
+
 @test "lists the languages in --help" {
 	run "$SCRIPT" --help
 	[ "$status" -eq 0 ]

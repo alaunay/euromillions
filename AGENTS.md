@@ -93,6 +93,10 @@ Signed-off-by: Name <email>
 - `master` requires GPG-signed commits. The rule is remote, applies to
   administrators, and rejects an unsigned push. `commit.gpgsign` must be
   true and the signing key must be registered on GitHub.
+- The commit email must be a verified UID of the signing key. This
+  repository sets `user.email` to `asl@launay.org` for that reason.
+  Never commit here with the `users.noreply.github.com` address: GitHub
+  answers `bad_email` and rejects the push.
 - The DCO app checks both trailers on pull requests, and only there. A
   direct push is not covered by the app.
 - `.githooks/commit-msg` rejects a commit with a missing or malformed

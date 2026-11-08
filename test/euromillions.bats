@@ -292,6 +292,12 @@ assert_draw () {
 	[[ "$output" == *"Numéros:"* ]]
 }
 
+@test "honours SHUF for a system without GNU shuf" {
+	run env SHUF=/nonexistent "$SCRIPT"
+	[ "$status" -eq 1 ]
+	[[ "$output" == *"draw failed: Numbers"* ]]
+}
+
 @test "passes shellcheck" {
 	if ! command -v shellcheck >/dev/null; then
 		printf 'shellcheck is required\n' >&2

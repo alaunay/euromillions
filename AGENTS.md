@@ -78,6 +78,8 @@ It animates with SMIL, so it needs no player and no JavaScript. Update
 - Bash only, bash 4 or later (`mapfile` is required).
 - Indent with tabs.
 - Keep `set -euo pipefail` at the top.
+- Use `SHUF` for the shuf binary, never the bare name: BSD and macOS ship
+  it as `gshuf`. Guard optional GNU behaviour, such as `readlink -f`.
 - Quote every expansion.
 - Colour escapes come from `setup_colors` only. Never print a raw
   escape, and keep the output readable when colour is disabled.

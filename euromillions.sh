@@ -9,6 +9,9 @@ COUNTSTARS=2
 STARSUP=12
 STARSDOWN=1
 
+# Entropy source for shuf, overridable to get a reproducible draw
+RANDOM_SOURCE=${RANDOM_SOURCE:-/dev/urandom}
+
 # Draw and print count distinct values from lo to hi, sorted
 draw () {
 	local label=$1
@@ -19,7 +22,7 @@ draw () {
 	local -a draws
 
 	# Keep the pipeline status: process substitution would hide a failure
-	if ! output=$(shuf --random-source=/dev/urandom -i "${lo}-${hi}" -n "${count}" | sort -n); then
+	if ! output=$(shuf --random-source="${RANDOM_SOURCE}" -i "${lo}-${hi}" -n "${count}" | sort -n); then
 		echo "draw failed: ${label}" >&2
 		exit 1
 	fi

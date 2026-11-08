@@ -14,6 +14,18 @@ Run it with:
 ./euromillions.sh
 ```
 
+## Tests
+
+The test suite uses [bats-core](https://github.com/bats-core/bats-core):
+
+```
+bats test/euromillions.bats
+```
+
+`RANDOM_SOURCE` overrides the entropy source that `shuf` reads. A fixed
+file makes a draw reproducible, which the tests use. The default is
+`/dev/urandom`.
+
 Configuration lives in the variables at the top of the script.
 
 ## Code conventions

@@ -259,6 +259,14 @@ $ rpmbuild -bb packaging/rpm/euromillions.spec --define "_topdir $PWD/rpmbuild"
 The packages install `euromillions` in `/usr/bin` and its catalogues in
 `/usr/share/euromillions`. CI builds both and attaches them to the run.
 
+## Code scanning
+
+GitHub code scanning shows the shellcheck findings as alerts. ShellCheck has
+no SARIF writer, so `tools/shellcheck-sarif.py` converts its JSON output,
+and `.github/workflows/tests.yml` uploads the result on every push and pull
+request. The alerts are informative; shellcheck still fails the test job on
+a finding.
+
 ## Contributing
 
 `master` only takes pull requests, and every pull request must:

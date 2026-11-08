@@ -49,6 +49,13 @@ a throwaway repository.
 GitHub Actions runs shellcheck and the suite on every push to `master`
 and on every pull request, in `.github/workflows/tests.yml`.
 
+## Code scanning
+
+GitHub code scanning is fed by `tools/shellcheck-sarif.py`, which converts
+`shellcheck -f json1` into SARIF, uploaded by the `code-scanning` job. Keep
+the converter working when the shellcheck fields change; it maps
+`error`/`warning` to the same SARIF level and everything else to `note`.
+
 ## Metadata
 
 `metadata.json` follows the OpenVox module metadata format: name, version,

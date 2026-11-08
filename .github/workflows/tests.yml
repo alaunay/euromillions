@@ -112,3 +112,27 @@ jobs:
             export SHUF=gshuf
             bash euromillions.sh | grep -q '^Numbers: '
             bash euromillions.sh --help | grep -q 'Languages: en fr'
+
+  code-scanning:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install shellcheck
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq shellcheck
+
+      - name: Convert the shellcheck findings
+        run: |
+          shellcheck -f json1 euromillions.sh .githooks/commit-msg \
+            tools/build-locales.sh > shellcheck.json || true
+          python3 tools/shellcheck-sarif.py shellcheck.json shellcheck.sarif
+
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: shellcheck.sarif
+          category: shellcheck

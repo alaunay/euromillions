@@ -86,15 +86,51 @@ The language is resolved in this order: `--lang`, `EUROMILLIONS_LANG`,
 the locale (`fr_FR.UTF-8` selects French), then English. An unknown code
 falls back to English.
 
-Translations live in `lang/`, one file per language:
+Translations are GNU gettext catalogues:
+
+| Path | Role |
+| --- | --- |
+| `po/euromillions.pot` | template, regenerated from the msgids |
+| `po/<code>.po` | one translator file per language |
+| `locale/<code>/LC_MESSAGES/euromillions.mo` | compiled form, built and git-ignored |
+
+The msgids are the English strings, so English needs no catalogue. Build
+the others before a non-English run: `tools/build-locales.sh`.
+
+Add a language:
 
 ```console
-$ cp lang/en.sh lang/de.sh
-$ EUROMILLIONS_LANG=de ./euromillions.sh   # after translating the values
+$ cp po/euromillions.pot po/de.po
+$ $EDITOR po/de.po        # fill the msgstr lines, set Language: de
+$ tools/build-locales.sh
+$ ./euromillions.sh --lang de
 ```
 
-`--help` lists whatever catalogues `lang/` contains. Extend the test
-suite when you add one.
+`tools/build-locales.sh` runs `msgfmt --check`, which fails on a
+translation whose `%s` placeholders do not match the source. Poedit,
+Weblate, and any PO editor can edit the same files.
+
+`--help` lists the `.po` files found in `po/`. After changing a msgid in
+`euromillions.sh`, update the template with:
+
+```console
+$ xgettext --language=Shell --keyword=_ --output=po/euromillions.pot euromillions.sh
+```
+
+then merge it into each catalogue with `msgmerge -U po/fr.po po/euromillions.pot`.
+
+gettext only loads a translation when a locale is active. The script
+replaces a `C` locale with the language's own (`fr_FR.UTF-8` for French),
+so the locale must be generated on the system: `sudo locale-gen fr_FR.UTF-8`
+on Debian, or `localedef`. When it is missing, the script warns and keeps
+English:
+
+```console
+$ ./euromillions.sh --lang fr
+no translation for fr, using English
+Numbers: 4 9 42 45 46
+Stars: 1 7
+```
 
 ## Requirements
 

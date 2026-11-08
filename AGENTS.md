@@ -40,7 +40,7 @@ Lint with [shellcheck](https://www.shellcheck.net/), which the suite
 also runs as one case when the binary is available:
 
 ```
-shellcheck euromillions.sh .githooks/commit-msg lang/*.sh
+shellcheck euromillions.sh .githooks/commit-msg tools/build-locales.sh
 ```
 
 GitHub Actions runs shellcheck and the suite on every push to `master`

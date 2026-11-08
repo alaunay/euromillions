@@ -284,13 +284,3 @@ assert_draw () {
 	run shellcheck "$root/euromillions.sh" "$root/.githooks/commit-msg" "$root/tools/build-locales.sh"
 	[ "$status" -eq 0 ]
 }
-
-@test "passes the python checks" {
-	python3 -m py_compile "${ROOT}/tools/make-demo.py"
-	if ! command -v ruff >/dev/null; then
-		printf 'ruff is required\n' >&2
-		false
-	fi
-	run ruff check "${ROOT}/tools/make-demo.py"
-	[ "$status" -eq 0 ]
-}

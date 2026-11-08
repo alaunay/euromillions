@@ -165,23 +165,21 @@ catalogue, the output stays English and a warning names the language.
 
 ## Tests
 
-The suite needs `bats`, `shellcheck`, `python3`, and `ruff`:
+The suite needs `bats` and `shellcheck`:
 
 ```console
 $ bats test/euromillions.bats
 $ shellcheck euromillions.sh .githooks/commit-msg tools/build-locales.sh
-$ python3 -m py_compile tools/make-demo.py
-$ ruff check tools/make-demo.py
 ```
 
-The bats suite runs the shellcheck command and the Python checks as
-cases, so a missing binary fails the case rather than skipping it. Any
-finding, at any severity, is a failure.
+The bats suite runs the shellcheck command as one of its cases, so a
+missing binary fails the case rather than skipping it. Any finding, at
+any severity, is a failure.
 
 The cases cover the output shape, the ranges, the order, the language
 resolution, and the failure paths. GitHub Actions installs both tools,
-generates the French locale, builds the catalogues, then runs shellcheck,
-ruff, and the suite on every push to `master` and on every pull request, in
+generates the French locale, builds the catalogues, then runs shellcheck
+and the suite on every push to `master` and on every pull request, in
 [`.github/workflows/tests.yml`](.github/workflows/tests.yml).
 
 `RANDOM_SOURCE` points `shuf` at another entropy file, which makes a draw
@@ -192,11 +190,20 @@ reproducible.
 ## Demo
 
 The animation at the top is declarative SVG, not a recording and not a
-GIF, so every browser plays it inline without a media player:
+GIF, so every browser plays it inline without a media player.
+
+The generator lives in its own repository,
+[euromillions-demo](https://github.com/alaunay/euromillions-demo). It is
+not needed to run the script, only to refresh the image:
 
 ```console
-$ python3 tools/make-demo.py
+$ git clone https://github.com/alaunay/euromillions-demo.git
+$ python3 euromillions-demo/make_demo.py assets/demo.svg
 ```
+
+The generator needs Python 3.8 or later and no third-party package. Its
+draw values and palette are constants; keep them in step with the
+script's constants and colour section when the palette changes.
 
 ---
 

@@ -6,6 +6,10 @@
 
 SCRIPT="${BATS_TEST_DIRNAME}/../euromillions.sh"
 
+# Pin the locale: the default output must be English whatever the host
+export LC_ALL=C
+export LANG=C
+
 numbers_line () {
 	printf '%s\n' "$output" | sed -n 's/^Numbers: //p'
 }
@@ -88,4 +92,68 @@ assert_draw () {
 	run env RANDOM_SOURCE="${BATS_TEST_TMPDIR}/missing" "$SCRIPT"
 	[ "$status" -eq 1 ]
 	[[ "$output" == *"draw failed: Numbers"* ]]
+}
+
+@test "prints french labels with --lang fr" {
+	run "$SCRIPT" --lang fr
+	[ "$status" -eq 0 ]
+	[ "${#lines[@]}" -eq 2 ]
+	[[ "${lines[0]}" =~ ^Numéros:\ [0-9]+(\ [0-9]+)*$ ]]
+	[[ "${lines[1]}" =~ ^Étoiles:\ [0-9]+(\ [0-9]+)*$ ]]
+	assert_draw "$(printf '%s\n' "$output" | sed -n 's/^Numéros: //p')" 5 1 50
+	assert_draw "$(printf '%s\n' "$output" | sed -n 's/^Étoiles: //p')" 2 1 12
+}
+
+@test "accepts the --lang=CODE form" {
+	run "$SCRIPT" --lang=fr
+	[ "$status" -eq 0 ]
+	[[ "$output" == Numéros:* ]]
+}
+
+@test "reads the language from EUROMILLIONS_LANG" {
+	run env EUROMILLIONS_LANG=fr "$SCRIPT"
+	[ "$status" -eq 0 ]
+	[[ "$output" == Numéros:* ]]
+}
+
+@test "detects the language from the locale" {
+	run env -u LC_ALL -u EUROMILLIONS_LANG LANG=fr_FR.UTF-8 "$SCRIPT"
+	[ "$status" -eq 0 ]
+	[[ "$output" == Numéros:* ]]
+}
+
+@test "prefers --lang over the environment" {
+	run env EUROMILLIONS_LANG=fr "$SCRIPT" --lang en
+	[ "$status" -eq 0 ]
+	[[ "$output" == Numbers:* ]]
+}
+
+@test "falls back to english for an unknown language" {
+	run "$SCRIPT" --lang de
+	[ "$status" -eq 0 ]
+	[[ "$output" == Numbers:* ]]
+}
+
+@test "translates the error messages" {
+	run env PATH=/nonexistent EUROMILLIONS_LANG=fr /bin/bash "$SCRIPT"
+	[ "$status" -eq 1 ]
+	[[ "$output" == *"tirage impossible: Numéros"* ]]
+}
+
+@test "lists the languages in --help" {
+	run "$SCRIPT" --help
+	[ "$status" -eq 0 ]
+	[[ "$output" == *"Languages: en fr"* ]]
+}
+
+@test "rejects --lang without a code" {
+	run "$SCRIPT" --lang
+	[ "$status" -eq 2 ]
+	[[ "$output" == *"needs a language code"* ]]
+}
+
+@test "rejects an unknown argument" {
+	run "$SCRIPT" --nope
+	[ "$status" -eq 2 ]
+	[[ "$output" == *"unknown argument: --nope"* ]]
 }

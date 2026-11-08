@@ -5,14 +5,18 @@ Guidance for agents working in this repository.
 ## Project
 
 `euromillions.sh` draws 5 numbers from 1-50 and 2 stars from 1-12 with
-`shuf`, sorts them, and prints them. There is no build step and no test
-suite.
+`shuf`, sorts them, and prints them. There is no build step.
 
 Run it with:
 
 ```
-./euromillions.sh
+./euromillions.sh [--lang CODE]
 ```
+
+Output strings live in `lang/*.sh`, one file per language. The script
+sources `lang/CODE.sh`, where CODE comes from `--lang`, then
+`EUROMILLIONS_LANG`, then the locale, then `en`. An unknown code falls
+back to `en`. Add a language by copying `lang/en.sh` to `lang/xx.sh`.
 
 ## Tests
 

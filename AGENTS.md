@@ -69,6 +69,13 @@ python3 tools/check-metadata.py
 CI validates it. The supported list is the contract; the CI jobs for
 Linux, macOS, and FreeBSD must agree with it.
 
+## Releases
+
+A `vX.Y.Z` tag triggers `.github/workflows/release.yml`, which builds both
+packages and attaches them to the GitHub release. The tag must equal the
+version in `debian/changelog` and in the spec file; bump both before
+tagging, and keep `metadata.json` in step.
+
 ## Packaging
 
 `debian/` builds a Debian package with `dpkg-buildpackage -b -us -uc`;

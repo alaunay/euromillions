@@ -273,6 +273,20 @@ and `.github/workflows/tests.yml` uploads the result on every push and pull
 request. The alerts are informative; shellcheck still fails the test job on
 a finding.
 
+## Releases
+
+Cut a tag to publish the packages:
+
+```console
+$ git tag v1.0.0
+$ git push origin v1.0.0
+```
+
+`.github/workflows/release.yml` builds the `.deb` and the `.rpm`, then
+attaches both to the GitHub release. The tag must match the versions in
+`debian/changelog` and `packaging/rpm/euromillions.spec`; the job stops
+otherwise. Bump those three places before tagging.
+
 ## Contributing
 
 `master` only takes pull requests, and every pull request must:

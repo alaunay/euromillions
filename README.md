@@ -198,11 +198,11 @@ not needed to run the script, only to refresh the image. `assets/demo.json`
 holds the content: commands, outputs, and colours.
 
 ```console
-$ git clone https://github.com/alaunay/terminal-svg-demo.git
-$ python3 terminal-svg-demo/make_demo.py assets/demo.json assets/demo.svg
+$ pipx install git+https://github.com/alaunay/terminal-svg-demo.git
+$ terminal-svg-demo assets/demo.json assets/demo.svg
 ```
 
-The generator needs Python 3.8 or later and no third-party package. Update
+The generator needs Python 3.10 or later and no third-party package. Update
 `assets/demo.json` when the outputs or the palette change.
 
 ---

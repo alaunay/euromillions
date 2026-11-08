@@ -54,8 +54,8 @@ and on every pull request, in `.github/workflows/tests.yml`.
 repository, driven by `assets/demo.json`:
 
 ```
-git clone https://github.com/alaunay/terminal-svg-demo.git
-python3 terminal-svg-demo/make_demo.py assets/demo.json assets/demo.svg
+pipx install git+https://github.com/alaunay/terminal-svg-demo.git
+terminal-svg-demo assets/demo.json assets/demo.svg
 ```
 
 It animates with SMIL, so it needs no player and no JavaScript. Update

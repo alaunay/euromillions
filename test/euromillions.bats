@@ -275,6 +275,23 @@ assert_draw () {
 	[[ "$output" == *"Numéros:"* ]]
 }
 
+@test "finds the data under share when packaged" {
+	mkdir -p "${BATS_TEST_TMPDIR}/bin" "${BATS_TEST_TMPDIR}/share/euromillions/po"
+	cp "$SCRIPT" "${BATS_TEST_TMPDIR}/bin/euromillions.sh"
+	cp "${ROOT}"/po/*.po "${BATS_TEST_TMPDIR}/share/euromillions/po/"
+
+	run /bin/bash "${BATS_TEST_TMPDIR}/bin/euromillions.sh" --help
+	[ "$status" -eq 0 ]
+	[[ "$output" == *"Languages: en fr"* ]]
+}
+
+@test "honours EUROMILLIONS_DATADIR" {
+	require_translation
+	run env EUROMILLIONS_DATADIR="$ROOT" "$SCRIPT" --lang fr
+	[ "$status" -eq 0 ]
+	[[ "$output" == *"Numéros:"* ]]
+}
+
 @test "passes shellcheck" {
 	if ! command -v shellcheck >/dev/null; then
 		printf 'shellcheck is required\n' >&2

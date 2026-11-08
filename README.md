@@ -219,6 +219,21 @@ entertainment only.
 
 ---
 
+## Packaging
+
+Both distributions build from the repository:
+
+```console
+$ dpkg-buildpackage -b -us -uc                  # Debian, needs debhelper
+$ mkdir -p rpmbuild/SOURCES
+$ git archive --format=tar.gz --prefix=euromillions-1.0.0/ \
+    --output=rpmbuild/SOURCES/euromillions-1.0.0.tar.gz HEAD
+$ rpmbuild -bb packaging/rpm/euromillions.spec --define "_topdir $PWD/rpmbuild"
+```
+
+The packages install `euromillions` in `/usr/bin` and its catalogues in
+`/usr/share/euromillions`. CI builds both and attaches them to the run.
+
 ## Contributing
 
 `master` only takes pull requests, and every pull request must:

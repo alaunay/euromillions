@@ -1,0 +1,15 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	tools/build-locales.sh
+
+override_dh_auto_test:
+	bats test test/shell
+
+override_dh_auto_install:
+	install -Dm755 euromillions.sh debian/euromillions/usr/bin/euromillions
+	install -d debian/euromillions/usr/share/euromillions
+	cp -a locale po debian/euromillions/usr/share/euromillions/

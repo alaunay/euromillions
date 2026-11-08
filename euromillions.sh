@@ -50,6 +50,12 @@ truecolor () {
 	return 1
 }
 
+# Palette, each entry named by its nearest standard colour:
+#   labels  grey   24-bit 154;164;178, 256-colour 247
+#   numbers blue   24-bit  77;107;255, 256-colour  69 (EuroMillions navy, brightened)
+#   stars   gold   24-bit 238;187;  5, 256-colour 220 (EuroMillions gold)
+#   errors  red    24-bit 255; 77; 77, 256-colour 203
+# The leading 1 asks for bold, which most themes render as a brighter shade.
 setup_colors () {
 	RESET=
 	LABEL_COLOR=
@@ -61,22 +67,22 @@ setup_colors () {
 	if use_color 1; then
 		RESET=$'\033[0m'
 		if truecolor; then
-			LABEL_COLOR=$'\033[38;2;154;164;178m'
-			NUMBERS_COLOR=$'\033[1;38;2;77;107;255m'
-			STARS_COLOR=$'\033[1;38;2;238;187;5m'
+			LABEL_COLOR=$'\033[38;2;154;164;178m'   # grey
+			NUMBERS_COLOR=$'\033[1;38;2;77;107;255m' # bold blue
+			STARS_COLOR=$'\033[1;38;2;238;187;5m'    # bold gold
 		else
-			LABEL_COLOR=$'\033[38;5;247m'
-			NUMBERS_COLOR=$'\033[1;38;5;69m'
-			STARS_COLOR=$'\033[1;38;5;220m'
+			LABEL_COLOR=$'\033[38;5;247m'   # grey
+			NUMBERS_COLOR=$'\033[1;38;5;69m'  # bold blue
+			STARS_COLOR=$'\033[1;38;5;220m'   # bold gold
 		fi
 	fi
 
 	if use_color 2; then
 		ERROR_RESET=$'\033[0m'
 		if truecolor; then
-			ERROR_COLOR=$'\033[1;38;2;255;77;77m'
+			ERROR_COLOR=$'\033[1;38;2;255;77;77m' # bold red
 		else
-			ERROR_COLOR=$'\033[1;38;5;203m'
+			ERROR_COLOR=$'\033[1;38;5;203m' # bold red
 		fi
 	fi
 }

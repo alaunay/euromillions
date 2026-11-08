@@ -4,6 +4,9 @@
 #
 # Bypass with "git commit --no-verify". This is a guard against mistakes,
 # not a security boundary: the remote requires GPG-signed commits.
+#
+# Keep this file portable: BSD grep, sed, and awk do not understand the
+# GNU extensions (grep -E is fine, sed \+ and sed I are not).
 
 msg_file=$1
 
@@ -13,16 +16,21 @@ fail () {
 	exit 1
 }
 
-if ! git interpret-trailers --parse "$msg_file" | grep -qi '^Co-authored-by: .\+ <.\+@.\+>$'; then
+trailers=$(git interpret-trailers --parse "$msg_file")
+
+if ! printf '%s\n' "$trailers" | grep -Eqi '^co-authored-by: .+ <.+@.+>$'; then
 	fail "missing or malformed Co-authored-by trailer"
 fi
 
-signoff=$(git interpret-trailers --parse "$msg_file" | sed -n 's/^Signed-off-by: .*<\(.\+\)>$/\1/ip')
+signoff=$(printf '%s\n' "$trailers" |
+	awk 'tolower($0) ~ /^signed-off-by:/ { print; exit }' |
+	sed -n 's/.*<\([^>]*\)>.*/\1/p')
+
 if [ -z "$signoff" ]; then
 	fail "missing or malformed Signed-off-by trailer"
 fi
 
-committer=$(git var GIT_COMMITTER_IDENT | sed -n 's/.*<\(.*\)>.*/\1/p')
+committer=$(git var GIT_COMMITTER_IDENT | sed -n 's/.*<\([^>]*\)>.*/\1/p')
 if [ "$signoff" != "$committer" ]; then
 	fail "Signed-off-by address '$signoff' does not match committer '$committer'"
 fi

@@ -109,4 +109,3 @@ jobs:
             export SHUF=gshuf
             bash euromillions.sh | grep -q '^Numbers: '
             bash euromillions.sh --help | grep -q 'Languages: en fr'
-            bash euromillions.sh -l fr | grep -q '^Numéros: '

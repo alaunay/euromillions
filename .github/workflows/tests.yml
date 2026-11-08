@@ -25,6 +25,9 @@ jobs:
       - name: Build the catalogues
         run: tools/build-locales.sh
 
+      - name: Validate the metadata
+        run: python3 tools/check-metadata.py
+
       - name: Run shellcheck
         run: shellcheck euromillions.sh .githooks/commit-msg tools/build-locales.sh
 

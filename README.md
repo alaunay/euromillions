@@ -172,6 +172,22 @@ macOS, and FreeBSD in CI.
 
 ---
 
+## Supported systems
+
+`metadata.json` follows the OpenVox module metadata format and lists the
+supported systems:
+
+| System | Minimum |
+| --- | --- |
+| Debian | 12 |
+| Ubuntu | 24.04 |
+| Red Hat Enterprise Linux | 9 |
+| CentOS Stream | 9 |
+| FreeBSD | 14 |
+| macOS (Darwin) | 14 |
+
+`tools/check-metadata.py` validates the file, and CI runs it.
+
 ## Tests
 
 The suite needs `bats` and `shellcheck`:

@@ -231,6 +231,12 @@ $ pipx install git+https://github.com/alaunay/terminal-svg-demo.git
 $ terminal-svg-demo assets/demo.json assets/demo.svg
 ```
 
+`assets/demo.json` names its colours in comments: EuroMillions blue
+`#4d6bff` for numbers, EuroMillions gold `#eebb05` for stars, neon green
+`#39ff14` for the prompt, near-white `#e6edf3` for the command, cool grey
+`#9aa4b2` for the labels. The coloured comment lines need terminal-svg-demo
+1.1.0 or later.
+
 The generator needs Python 3.10 or later and no third-party package. Update
 `assets/demo.json` when the outputs or the palette change.
 

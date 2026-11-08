@@ -4,21 +4,28 @@
     {
       "command": "./euromillions.sh",
       "outputs": [
+        // EuroMillions blue
         {"label": "Numbers:", "value": "4 8 13 36 46", "color": "#4d6bff"},
+        // EuroMillions gold
         {"label": "Stars:", "value": "3 12", "color": "#eebb05"}
       ]
     },
     {
       "command": "./euromillions.sh --lang fr",
       "outputs": [
+        // EuroMillions blue
         {"label": "Numéros:", "value": "17 19 20 27 48", "color": "#4d6bff"},
+        // EuroMillions gold
         {"label": "Étoiles:", "value": "5 12", "color": "#eebb05"}
       ]
     }
   ],
   "colors": {
+    // neon green dollar sign
     "prompt": "#39ff14",
+    // near-white typed command and cursor
     "command": "#e6edf3",
+    // cool grey output labels
     "label": "#9aa4b2"
   }
 }

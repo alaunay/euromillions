@@ -157,9 +157,18 @@ Stars: 1 7
 - GNU coreutils, for `shuf` and `sort`
 - gettext, for a language other than English, plus that language's locale
 
-`shuf` ships with Linux. It is absent from macOS, where coreutils must be
-installed separately. Without `gettext`, or without the language's
-catalogue, the output stays English and a warning names the language.
+`shuf` ships with Linux. macOS and FreeBSD provide it through GNU
+coreutils, under the name `gshuf`:
+
+```console
+$ brew install bash coreutils gettext        # macOS, then use bash 4 or later
+$ pkg install bash coreutils gettext         # FreeBSD
+$ SHUF=gshuf ./euromillions.sh
+```
+
+Without `gettext`, or without the language's catalogue, the output stays
+English and a warning names the language. The test suite runs on Linux,
+macOS, and FreeBSD in CI.
 
 ---
 

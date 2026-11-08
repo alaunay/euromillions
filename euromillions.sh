@@ -1,9 +1,9 @@
-#! /bin/bash
+#!/usr/bin/env bash
 
 set -euo pipefail
 
 source_path=${BASH_SOURCE[0]}
-if command -v readlink >/dev/null 2>&1; then
+if command -v readlink >/dev/null 2>&1 && readlink -f -- / >/dev/null 2>&1; then
 	source_path=$(readlink -f -- "$source_path")
 fi
 
@@ -31,6 +31,9 @@ STARSDOWN=${STARSDOWN:-1}
 
 # Entropy source for shuf, overridable to get a reproducible draw
 RANDOM_SOURCE=${RANDOM_SOURCE:-/dev/urandom}
+
+# shuf is GNU coreutils; BSD and macOS install it as gshuf
+SHUF=${SHUF:-shuf}
 
 # auto, always, or never; see use_color
 COLOR_MODE=${EUROMILLIONS_COLOR:-auto}
@@ -207,7 +210,7 @@ draw () {
 	local -a draws
 
 	# Keep the pipeline status: process substitution would hide a failure
-	if ! output=$(shuf --random-source="${RANDOM_SOURCE}" -i "${lo}-${hi}" -n "${count}" | sort -n); then
+	if ! output=$("${SHUF}" --random-source="${RANDOM_SOURCE}" -i "${lo}-${hi}" -n "${count}" | sort -n); then
 		printf '%s%s: %s%s\n' "${ERROR_COLOR}" "$(_ 'draw failed')" "${label}" "${ERROR_RESET}" >&2
 		exit 1
 	fi

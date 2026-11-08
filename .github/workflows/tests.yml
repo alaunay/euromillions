@@ -57,10 +57,11 @@ jobs:
 
   package-rpm:
     runs-on: ubuntu-latest
-    container: fedora:latest
+    container: quay.io/centos/centos:stream10
     steps:
       - name: Install the packaging tools
         run: |
+          dnf config-manager --set-enabled crb
           dnf install -y git tar gzip rpm-build gettext
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
@@ -79,3 +80,32 @@ jobs:
         with:
           name: rpm-package
           path: dist/*.rpm
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install the tools
+        run: |
+          brew install bash coreutils gettext bats shellcheck
+          echo "$(brew --prefix bash)/bin" >> "$GITHUB_PATH"
+          echo "$(brew --prefix coreutils)/libexec/gnubin" >> "$GITHUB_PATH"
+          echo "$(brew --prefix gettext)/bin" >> "$GITHUB_PATH"
+
+      - name: Run the test suite
+        run: bats test test/shell
+
+  freebsd:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: vmactions/freebsd-vm@v1
+        with:
+          prepare: pkg install -y bash coreutils gettext
+          run: |
+            export PATH=/usr/local/bin:$PATH
+            export SHUF=gshuf
+            bash euromillions.sh | grep -q '^Numbers: '
+            bash euromillions.sh --help | grep -q 'Languages: en fr'

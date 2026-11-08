@@ -5,6 +5,9 @@
 # Run with "bats test/euromillions.bats".
 
 SCRIPT="${BATS_TEST_DIRNAME}/../euromillions.sh"
+
+# The tests must run the script with bash 4 or later, not the system bash
+BASH_BIN=${BASH_BIN:-$(command -v bash)}
 ROOT=$(cd -- "${BATS_TEST_DIRNAME}/.." && pwd)
 
 # Pin the locale: the default output must be English whatever the host
@@ -95,7 +98,7 @@ assert_draw () {
 }
 
 @test "fails and reports the label when shuf is unavailable" {
-	run env PATH=/nonexistent /bin/bash "$SCRIPT"
+	run env PATH=/nonexistent "${BASH_BIN}" "$SCRIPT"
 	[ "$status" -eq 1 ]
 	[[ "$output" == *"draw failed: Numbers"* ]]
 }
@@ -240,7 +243,7 @@ assert_draw () {
 }
 
 @test "colours the error messages" {
-	run env PATH=/nonexistent EUROMILLIONS_COLOR=always /bin/bash "$SCRIPT"
+	run env PATH=/nonexistent EUROMILLIONS_COLOR=always "${BASH_BIN}" "$SCRIPT"
 	[ "$status" -eq 1 ]
 	[[ "$output" == *$'\e[1;38;5;203mdraw failed: Numbers'* ]]
 }
@@ -261,7 +264,7 @@ assert_draw () {
 
 @test "warns when the requested language has no catalogue" {
 	cp "$SCRIPT" "${BATS_TEST_TMPDIR}/euromillions.sh"
-	run /bin/bash "${BATS_TEST_TMPDIR}/euromillions.sh" --lang fr
+	run "${BASH_BIN}" "${BATS_TEST_TMPDIR}/euromillions.sh" --lang fr
 	[ "$status" -eq 0 ]
 	[[ "$output" == *"no translation for fr, using English"* ]]
 	[[ "$output" == *"Numbers:"* ]]
@@ -280,7 +283,7 @@ assert_draw () {
 	cp "$SCRIPT" "${BATS_TEST_TMPDIR}/bin/euromillions.sh"
 	cp "${ROOT}"/po/*.po "${BATS_TEST_TMPDIR}/share/euromillions/po/"
 
-	run /bin/bash "${BATS_TEST_TMPDIR}/bin/euromillions.sh" --help
+	run "${BASH_BIN}" "${BATS_TEST_TMPDIR}/bin/euromillions.sh" --help
 	[ "$status" -eq 0 ]
 	[[ "$output" == *"Languages: en fr"* ]]
 }
@@ -290,6 +293,12 @@ assert_draw () {
 	run env EUROMILLIONS_DATADIR="$ROOT" "$SCRIPT" --lang fr
 	[ "$status" -eq 0 ]
 	[[ "$output" == *"Numéros:"* ]]
+}
+
+@test "honours SHUF for a system without GNU shuf" {
+	run env SHUF=/nonexistent "$SCRIPT"
+	[ "$status" -eq 1 ]
+	[[ "$output" == *"draw failed: Numbers"* ]]
 }
 
 @test "passes shellcheck" {

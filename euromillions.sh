@@ -13,12 +13,13 @@ if [ "$SCRIPT_DIR" = "$source_path" ]; then
 fi
 SCRIPT_DIR=$(cd -- "$SCRIPT_DIR" && pwd)
 
-COUNTNUMBERS=5
-NUMBERSUP=50
-NUMBERSDOWN=1
-COUNTSTARS=2
-STARSUP=12
-STARSDOWN=1
+# Grid shape, overridable from the environment
+COUNTNUMBERS=${COUNTNUMBERS:-5}
+NUMBERSUP=${NUMBERSUP:-50}
+NUMBERSDOWN=${NUMBERSDOWN:-1}
+COUNTSTARS=${COUNTSTARS:-2}
+STARSUP=${STARSUP:-12}
+STARSDOWN=${STARSDOWN:-1}
 
 # Entropy source for shuf, overridable to get a reproducible draw
 RANDOM_SOURCE=${RANDOM_SOURCE:-/dev/urandom}

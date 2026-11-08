@@ -44,7 +44,8 @@ and on every pull request, in `.github/workflows/tests.yml`.
 `python3 tools/make-demo.py`, plain Python and no dependency. It animates
 with SMIL, so it needs no player and no JavaScript.
 
-Configuration lives in the variables at the top of the script.
+The grid shape lives in the variables at the top of the script. Each one
+reads its environment, with the EuroMillions value as the default.
 
 ## Code conventions
 

@@ -230,6 +230,14 @@ assert_draw () {
 	[[ "$output" == *"invalid EUROMILLIONS_COLOR: sometimes"* ]]
 }
 
+@test "reads the grid shape from the environment" {
+	run env COUNTNUMBERS=3 NUMBERSDOWN=2 NUMBERSUP=10 \
+		COUNTSTARS=1 STARSDOWN=0 STARSUP=4 "$SCRIPT"
+	[ "$status" -eq 0 ]
+	assert_draw "$(numbers_line)" 3 2 10
+	assert_draw "$(stars_line)" 1 0 4
+}
+
 @test "passes shellcheck" {
 	command -v shellcheck >/dev/null || skip "shellcheck is not installed"
 	root=$(cd -- "${BATS_TEST_DIRNAME}/.." && pwd)

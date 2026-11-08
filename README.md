@@ -49,6 +49,26 @@ accepts `auto`, `always`, or `never` for scripts and pipes.
 The palette is 24-bit when `COLORTERM` says `truecolor` or `24bit`, and
 falls back to 256-colour codes otherwise, so the hues match the demo.
 
+## Configuration
+
+The grid shape comes from the environment, with the EuroMillions values
+as defaults:
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `COUNTNUMBERS` | `5` | numbers per draw |
+| `NUMBERSDOWN` | `1` | lowest number |
+| `NUMBERSUP` | `50` | highest number |
+| `COUNTSTARS` | `2` | stars per draw |
+| `STARSDOWN` | `1` | lowest star |
+| `STARSUP` | `12` | highest star |
+
+```console
+$ COUNTNUMBERS=3 NUMBERSUP=10 ./euromillions.sh
+Numbers: 2 6 9
+Stars: 4 11
+```
+
 ## Languages
 
 | Code | Language |

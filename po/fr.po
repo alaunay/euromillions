@@ -53,3 +53,6 @@ msgstr "argument inconnu : %s"
 
 msgid "option %s needs a language code"
 msgstr "l'option %s attend un code de langue"
+
+msgid "no translation for %s, using English"
+msgstr "pas de traduction pour %s, sortie en anglais"

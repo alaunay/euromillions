@@ -101,26 +101,43 @@ _ () {
 	fi
 }
 
-# Locale name for a catalogue code. gettext ignores LANGUAGE when the
-# locale is C, so a C locale is replaced by the language's own locale.
-locale_name () {
-	case $1 in
-		en) printf 'en_US.UTF-8' ;;
-		fr) printf 'fr_FR.UTF-8' ;;
-		*) printf '%s' "$1" ;;
-	esac
-}
-
+# gettext ignores LANGUAGE when the locale is C, so a C locale is
+# replaced by the language's own locale. An unknown code keeps the
+# caller's locale: naming a locale that does not exist makes glibc warn.
 setup_locale () {
 	local code=$1
+	local mapped=
+
+	case "$code" in
+		en) mapped=en_US.UTF-8 ;;
+		fr) mapped=fr_FR.UTF-8 ;;
+	esac
 
 	TEXTDOMAIN=euromillions
 	TEXTDOMAINDIR="${SCRIPT_DIR}/locale"
 	LANGUAGE=$code
-	LC_MESSAGES=$(locale_name "$code")
-	LANG=$LC_MESSAGES
-	unset LC_ALL
-	export TEXTDOMAIN TEXTDOMAINDIR LANGUAGE LC_MESSAGES LANG
+	export TEXTDOMAIN TEXTDOMAINDIR LANGUAGE
+
+	if [ -n "$mapped" ]; then
+		LC_MESSAGES=$mapped
+		LANG=$mapped
+		unset LC_ALL
+		export LC_MESSAGES LANG
+	fi
+}
+
+# Warn once when a requested language has no working catalogue
+warn_missing_translation () {
+	local code=$1
+
+	case "$code" in
+		en|C|C.*|POSIX) return 0 ;;
+	esac
+
+	# A working catalogue translates this msgid
+	[ "$(_ 'Numbers')" = "Numbers" ] || return 0
+
+	printf '%s\n' "$(format_message "$(_ 'no translation for %s, using English')" "$code")" >&2
 }
 
 # Build the language list: English plus every PO catalogue
@@ -238,6 +255,7 @@ done
 
 setup_colors
 setup_locale "$language"
+warn_missing_translation "$language"
 
 if [ "$error_kind" = needs_code ]; then
 	printf '%s%s%s\n' "${ERROR_COLOR}" \

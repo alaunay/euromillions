@@ -103,7 +103,8 @@ suite when you add one.
 - gettext, for a language other than English, plus that language's locale
 
 `shuf` ships with Linux. It is absent from macOS, where coreutils must be
-installed separately. Without `gettext`, the output stays English.
+installed separately. Without `gettext`, or without the language's
+catalogue, the output stays English and a warning names the language.
 
 ## Tests
 

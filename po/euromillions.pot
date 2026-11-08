@@ -65,3 +65,6 @@ msgstr ""
 #: euromillions.sh
 msgid "option %s needs a language code"
 msgstr ""
+
+msgid "no translation for %s, using English"
+msgstr ""

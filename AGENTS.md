@@ -17,7 +17,8 @@ Output strings are gettext msgids in `euromillions.sh`. Translations
 live in `po/`, with `po/euromillions.pot` as the template. `CODE` comes
 from `--lang`, then `EUROMILLIONS_LANG`, then the locale, then `en`. An
 unknown code falls back to `en`, and a missing gettext binary prints the
-msgids.
+msgids. When the resolved language has no working catalogue, the script
+warns on stderr and continues in English.
 
 Run `tools/build-locales.sh` after editing a `.po`; it compiles to
 `locale/CODE/LC_MESSAGES/euromillions.mo`, which is ignored by git. CI

@@ -258,6 +258,22 @@ assert_draw () {
 	assert_draw "$(stars_line)" 1 0 4
 }
 
+@test "warns when the requested language has no catalogue" {
+	cp "$SCRIPT" "${BATS_TEST_TMPDIR}/euromillions.sh"
+	run /bin/bash "${BATS_TEST_TMPDIR}/euromillions.sh" --lang fr
+	[ "$status" -eq 0 ]
+	[[ "$output" == *"no translation for fr, using English"* ]]
+	[[ "$output" == *"Numbers:"* ]]
+}
+
+@test "stays quiet when the catalogue works" {
+	require_translation
+	run env EUROMILLIONS_LANG=fr "$SCRIPT"
+	[ "$status" -eq 0 ]
+	[[ "$output" != *"no translation"* ]]
+	[[ "$output" == *"Numéros:"* ]]
+}
+
 @test "passes shellcheck" {
 	command -v shellcheck >/dev/null || skip "shellcheck is not installed"
 	root=$(cd -- "${BATS_TEST_DIRNAME}/.." && pwd)

@@ -1,3 +1,17 @@
 *.swp
 *.swo
 locale/
+*.deb
+*.buildinfo
+*.changes
+dist/
+rpmbuild/
+debian/euromillions/
+debian/.debhelper/
+debian/files
+debian/debhelper-build-stamp
+debian/*.substvars
+debian/euromillions/
+debian/.debhelper/
+debian/files
+debian/debhelper-build-stamp

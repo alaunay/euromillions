@@ -49,6 +49,16 @@ a throwaway repository.
 GitHub Actions runs shellcheck and the suite on every push to `master`
 and on every pull request, in `.github/workflows/tests.yml`.
 
+## Packaging
+
+`debian/` builds a Debian package with `dpkg-buildpackage -b -us -uc`;
+`packaging/rpm/euromillions.spec` builds an RPM from a `git archive`
+tarball. Both run `tools/build-locales.sh` during the build.
+
+The installed script keeps its data under `/usr/share/euromillions`; the
+script finds it through `SCRIPT_DIR/../share`, or `EUROMILLIONS_DATADIR`.
+Do not move the catalogues without that lookup.
+
 ## Demo
 
 `assets/demo.svg`, the animation used by the README, comes from the

@@ -1,0 +1,18 @@
+Source: euromillions
+Section: games
+Priority: optional
+Maintainer: Arnaud Launay <asl@launay.org>
+Build-Depends: bats, debhelper-compat (= 13), gettext, shellcheck
+Standards-Version: 4.7.0
+Rules-Requires-Root: no
+Homepage: https://github.com/alaunay/euromillions
+Vcs-Git: https://github.com/alaunay/euromillions.git
+
+Package: euromillions
+Architecture: all
+Depends: bash (>= 4), coreutils (>= 8.22), gettext, ${misc:Depends}
+Recommends: locales
+Description: draw EuroMillions grids from the terminal
+ A small Bash script that draws five numbers from 1 to 50 and two stars
+ from 1 to 12, sorted, with an optional colour output and translations
+ through GNU gettext.

@@ -13,6 +13,14 @@ if [ "$SCRIPT_DIR" = "$source_path" ]; then
 fi
 SCRIPT_DIR=$(cd -- "$SCRIPT_DIR" && pwd)
 
+# Data lives beside the script in a checkout, and under /usr/share when
+# the distribution package installs it
+DATA_DIR=${EUROMILLIONS_DATADIR:-}
+if [ -z "$DATA_DIR" ] && [ -d "${SCRIPT_DIR}/../share/euromillions/po" ]; then
+	DATA_DIR=$(cd -- "${SCRIPT_DIR}/../share/euromillions" && pwd)
+fi
+DATA_DIR=${DATA_DIR:-$SCRIPT_DIR}
+
 # Grid shape, overridable from the environment
 COUNTNUMBERS=${COUNTNUMBERS:-5}
 NUMBERSUP=${NUMBERSUP:-50}
@@ -114,7 +122,7 @@ setup_locale () {
 	esac
 
 	TEXTDOMAIN=euromillions
-	TEXTDOMAINDIR="${SCRIPT_DIR}/locale"
+	TEXTDOMAINDIR="${DATA_DIR}/locale"
 	LANGUAGE=$code
 	export TEXTDOMAIN TEXTDOMAINDIR LANGUAGE
 
@@ -144,7 +152,7 @@ warn_missing_translation () {
 languages () {
 	local file code list=en
 
-	for file in "${SCRIPT_DIR}"/po/*.po; do
+	for file in "${DATA_DIR}"/po/*.po; do
 		[ -e "$file" ] || continue
 		code=${file##*/}
 		code=${code%.po}

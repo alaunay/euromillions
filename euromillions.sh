@@ -1,5 +1,7 @@
 #! /bin/bash
 
+set -euo pipefail
+
 COUNTNUMBERS=5
 NUMBERSUP=50
 NUMBERSDOWN=1
@@ -7,28 +9,31 @@ COUNTSTARS=2
 STARSUP=12
 STARSDOWN=1
 
-declare -a numbers_sorted
-declare -a stars_sorted
+# Draw and print count distinct values from lo to hi, sorted
+draw () {
+	local label=$1
+	local count=$2
+	local lo=$3
+	local hi=$4
+	local output
+	local -a draws
 
-# Get and print numbers
-getnumbers () {
+	# Keep the pipeline status: process substitution would hide a failure
+	if ! output=$(shuf --random-source=/dev/urandom -i "${lo}-${hi}" -n "${count}" | sort -n); then
+		echo "draw failed: ${label}" >&2
+		exit 1
+	fi
 
-	mapfile -t numbers_sorted < <( shuf --random-source=/dev/random -i ${NUMBERSDOWN}-${NUMBERSUP} -n ${COUNTNUMBERS} | sort -n )
+	mapfile -t draws <<< "${output}"
 
-	# Print results
-	echo "Numbers: ${numbers_sorted[*]}"
+	if (( ${#draws[@]} != count )); then
+		echo "short draw: ${label} (${#draws[@]}/${count})" >&2
+		exit 1
+	fi
 
-}
-
-# Get and print stars
-getstars () {
-
-	mapfile -t stars_sorted < <(shuf --random-source=/dev/random -i ${STARSDOWN}-${STARSUP} -n ${COUNTSTARS} | sort -n )
-
-	# Print results
-	echo "Stars: ${stars_sorted[*]}"
+	echo "${label}: ${draws[*]}"
 }
 
 # Start functions
-getnumbers
-getstars
+draw Numbers "${COUNTNUMBERS}" "${NUMBERSDOWN}" "${NUMBERSUP}"
+draw Stars "${COUNTSTARS}" "${STARSDOWN}" "${STARSUP}"

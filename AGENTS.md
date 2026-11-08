@@ -13,6 +13,9 @@ Run it with:
 ./euromillions.sh [--lang CODE]
 ```
 
+The grid shape lives in the variables at the top of the script. Each one
+reads its environment, with the EuroMillions value as the default.
+
 Output strings are gettext msgids in `euromillions.sh`. Translations
 live in `po/`, with `po/euromillions.pot` as the template. `CODE` comes
 from `--lang`, then `EUROMILLIONS_LANG`, then the locale, then `en`. An
@@ -26,32 +29,29 @@ builds it too.
 
 ## Tests
 
-The test suite uses [bats-core](https://github.com/bats-core/bats-core):
+The test suite needs [bats-core](https://github.com/bats-core/bats-core)
+and [shellcheck](https://www.shellcheck.net/). Both are required, and CI
+fails on a missing binary as well as on a finding:
 
 ```
 bats test/euromillions.bats
+shellcheck euromillions.sh .githooks/commit-msg tools/build-locales.sh
 ```
 
 `RANDOM_SOURCE` overrides the entropy source that `shuf` reads. A fixed
 file makes a draw reproducible, which the tests use. The default is
 `/dev/urandom`.
 
-Lint with [shellcheck](https://www.shellcheck.net/), which the suite
-also runs as one case when the binary is available:
-
-```
-shellcheck euromillions.sh .githooks/commit-msg tools/build-locales.sh
-```
+The suite runs the shellcheck command as one of its cases.
 
 GitHub Actions runs shellcheck and the suite on every push to `master`
 and on every pull request, in `.github/workflows/tests.yml`.
 
+## Demo
+
 `assets/demo.svg`, the animation used by the README, is generated with
 `python3 tools/make-demo.py`, plain Python and no dependency. It animates
 with SMIL, so it needs no player and no JavaScript.
-
-The grid shape lives in the variables at the top of the script. Each one
-reads its environment, with the EuroMillions value as the default.
 
 ## Code conventions
 

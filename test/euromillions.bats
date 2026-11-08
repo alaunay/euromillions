@@ -276,7 +276,10 @@ assert_draw () {
 }
 
 @test "passes shellcheck" {
-	command -v shellcheck >/dev/null || skip "shellcheck is not installed"
+	if ! command -v shellcheck >/dev/null; then
+		printf 'shellcheck is required\n' >&2
+		false
+	fi
 	root=$(cd -- "${BATS_TEST_DIRNAME}/.." && pwd)
 	run shellcheck "$root/euromillions.sh" "$root/.githooks/commit-msg" "$root/tools/build-locales.sh"
 	[ "$status" -eq 0 ]

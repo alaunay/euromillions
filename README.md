@@ -144,24 +144,34 @@ catalogue, the output stays English and a warning names the language.
 
 ## Tests
 
+The suite needs `bats` and `shellcheck`:
+
 ```console
 $ bats test/euromillions.bats
+$ shellcheck euromillions.sh .githooks/commit-msg tools/build-locales.sh
 ```
 
-The suite covers the output shape, the ranges, the order, the language
-resolution, and the failure paths. GitHub Actions runs it on every push
-to `master` and on every pull request, in
+The bats suite runs the shellcheck command as one of its cases, so a
+missing binary fails the case rather than skipping it. Any finding, at
+any severity, is a failure.
+
+The cases cover the output shape, the ranges, the order, the language
+resolution, and the failure paths. GitHub Actions installs both tools,
+generates the French locale, builds the catalogues, then runs shellcheck
+and the suite on every push to `master` and on every pull request, in
 [`.github/workflows/tests.yml`](.github/workflows/tests.yml).
 
-The animation above is declarative SVG, not a recording and not a GIF,
-so every browser plays it inline without a media player:
+`RANDOM_SOURCE` points `shuf` at another entropy file, which makes a draw
+reproducible.
+
+## Demo
+
+The animation at the top is declarative SVG, not a recording and not a
+GIF, so every browser plays it inline without a media player:
 
 ```console
 $ python3 tools/make-demo.py
 ```
-
-`RANDOM_SOURCE` points `shuf` at another entropy file, which makes a draw
-reproducible.
 
 ## Disclaimer
 

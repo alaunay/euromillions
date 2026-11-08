@@ -147,7 +147,8 @@ assert_draw () {
 @test "falls back to english for an unknown language" {
 	run "$SCRIPT" --lang de
 	[ "$status" -eq 0 ]
-	[[ "$output" == Numbers:* ]]
+	[[ "$output" == *"no translation for de"* ]]
+	[[ "$output" == *"Numbers:"* ]]
 }
 
 @test "translates the error messages" {

@@ -146,6 +146,25 @@ assert_draw () {
 	[[ "$output" == *"Languages: en fr"* ]]
 }
 
+@test "translates the help with a --lang that follows -h" {
+	run "$SCRIPT" -h -l fr
+	[ "$status" -eq 0 ]
+	[[ "$output" == *"Utilisation :"* ]]
+	[[ "$output" == *"Langues : en fr"* ]]
+}
+
+@test "translates the help with a --lang that precedes -h" {
+	run "$SCRIPT" --lang fr --help
+	[ "$status" -eq 0 ]
+	[[ "$output" == *"Utilisation :"* ]]
+}
+
+@test "translates the argument errors" {
+	run "$SCRIPT" --lang fr --nope
+	[ "$status" -eq 2 ]
+	[[ "$output" == *"argument inconnu : --nope"* ]]
+}
+
 @test "rejects --lang without a code" {
 	run "$SCRIPT" --lang
 	[ "$status" -eq 2 ]

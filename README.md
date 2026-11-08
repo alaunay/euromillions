@@ -36,7 +36,7 @@ $ ./euromillions.sh [-l CODE | --lang CODE] [--no-color] [-h | --help]
 | --- | --- |
 | `-l, --lang CODE` | Set the output language, overriding the locale |
 | `--no-color` | Never use colours |
-| `-h, --help` | Show the options and the available languages |
+| `-h, --help` | Show the options and the available languages, in the selected language |
 
 Draws are independent, uniform, and read from `/dev/urandom`. Every run
 gives a new grid. Labels are muted, numbers in the EuroMillions blue and stars in the

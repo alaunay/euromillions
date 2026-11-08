@@ -99,19 +99,26 @@ languages () {
 	printf '%s\n' "${list% }"
 }
 
+# Fill the %s placeholders of a message, in order
+format_message () {
+	local message=$1
+	shift
+	local arg
+
+	for arg in "$@"; do
+		message=${message/\%s/${arg}}
+	done
+
+	printf '%s' "${message}"
+}
+
 usage () {
-	cat <<EOF
-Usage: ${0##*/} [--lang CODE] [--no-color]
-
-Draw ${COUNTNUMBERS} numbers from ${NUMBERSDOWN} to ${NUMBERSUP} and ${COUNTSTARS} stars from ${STARSDOWN} to ${STARSUP}.
-
-Options:
-  -l, --lang CODE  output language, overriding the locale
-      --no-color   never use colours
-  -h, --help       show this help
-
-Languages: $(languages)
-EOF
+	printf '%s %s [--lang CODE] [--no-color]\n\n' "${MSG_USAGE}" "${0##*/}"
+	printf '%s\n\n' "$(format_message "${MSG_DRAW_SUMMARY}" \
+		"${COUNTNUMBERS}" "${NUMBERSDOWN}" "${NUMBERSUP}" \
+		"${COUNTSTARS}" "${STARSDOWN}" "${STARSUP}")"
+	printf '%s\n' "${MSG_OPTIONS}" "${MSG_OPT_LANG}" "${MSG_OPT_NO_COLOR}" "${MSG_OPT_HELP}"
+	printf '\n%s %s\n' "${MSG_LANGUAGES}" "$(languages)"
 }
 
 # Language from EUROMILLIONS_LANG, then the locale, then English
@@ -170,13 +177,18 @@ draw () {
 }
 
 language=$(detect_language)
+show_help=0
+error_kind=
+error_arg=
 
+# Parse everything first: --help must honour a --lang that follows it
 while (( $# )); do
 	case $1 in
 		-l|--lang)
 			if (( $# < 2 )); then
-				echo "option $1 needs a language code" >&2
-				exit 2
+				error_kind=needs_code
+				error_arg=$1
+				break
 			fi
 			language=$2
 			shift 2
@@ -190,19 +202,38 @@ while (( $# )); do
 			shift
 			;;
 		-h|--help)
-			usage
-			exit 0
+			show_help=1
+			shift
 			;;
 		*)
-			echo "unknown argument: $1" >&2
-			usage >&2
-			exit 2
+			error_kind=unknown
+			error_arg=$1
+			break
 			;;
 	esac
 done
 
 setup_colors
 load_language "$language"
+
+if [ "$error_kind" = needs_code ]; then
+	printf '%s%s%s\n' "${ERROR_COLOR}" \
+		"$(format_message "${MSG_LANG_NEEDS_CODE}" "${error_arg}")" "${ERROR_RESET}" >&2
+	usage >&2
+	exit 2
+fi
+
+if [ "$error_kind" = unknown ]; then
+	printf '%s%s%s\n' "${ERROR_COLOR}" \
+		"$(format_message "${MSG_UNKNOWN_ARG}" "${error_arg}")" "${ERROR_RESET}" >&2
+	usage >&2
+	exit 2
+fi
+
+if (( show_help )); then
+	usage
+	exit 0
+fi
 
 # Start functions
 draw "${MSG_NUMBERS}" "${COUNTNUMBERS}" "${NUMBERSDOWN}" "${NUMBERSUP}" "${NUMBERS_COLOR}"

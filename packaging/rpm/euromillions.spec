@@ -1,5 +1,5 @@
 Name:           euromillions
-Version:        1.0.0
+Version:        0.0.0
 Release:        1%{?dist}
 Summary:        Draw EuroMillions grids from the terminal
 
@@ -36,5 +36,5 @@ cp -a locale po %{buildroot}%{_datadir}/%{name}/
 %{_datadir}/%{name}
 
 %changelog
-* Sun Nov 08 2026 Arnaud Launay <asl@launay.org> - 1.0.0-1
-- Initial package.
+* Mon Nov 09 2026 Arnaud Launay <asl@launay.org> - 0.0.0-1
+- Unreleased.

@@ -283,9 +283,9 @@ $ git push origin v1.0.0
 ```
 
 `.github/workflows/release.yml` builds the `.deb` and the `.rpm`, then
-attaches both to the GitHub release. The tag must match the versions in
-`debian/changelog` and `packaging/rpm/euromillions.spec`; the job stops
-otherwise. Bump those three places before tagging.
+attaches both to the GitHub release. The repository carries `0.0.0` as
+the unreleased placeholder; the workflow takes the version from the tag
+and injects it into `debian/changelog` and the spec before building.
 
 ## Contributing
 

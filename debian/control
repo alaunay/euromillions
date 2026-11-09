@@ -2,7 +2,8 @@ Source: euromillions
 Section: games
 Priority: optional
 Maintainer: Arnaud Launay <asl@launay.org>
-Build-Depends: bats, debhelper-compat (= 13), gettext, shellcheck
+Build-Depends: apt-utils, bats, createrepo-c, debhelper-compat (= 13), gettext,
+ gpg, rpm, shellcheck
 Standards-Version: 4.7.0
 Rules-Requires-Root: no
 Homepage: https://github.com/alaunay/euromillions

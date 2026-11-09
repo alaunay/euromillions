@@ -82,6 +82,17 @@ python3 tools/check-metadata.py
 CI validates it. The supported list is the contract; the CI jobs for
 Linux, macOS, and FreeBSD must agree with it.
 
+## Repository hosting
+
+`tools/build-repo.sh` assembles an apt repository and an rpm repository
+from the release assets, signing the metadata and the packages with
+`REPO_GPG_KEY_ID`. `.github/workflows/pages.yml` runs it on every published
+release and deploys the result with GitHub Pages.
+
+Secrets: `REPO_GPG_PRIVATE_KEY` (armored private key) and `REPO_GPG_KEY_ID`.
+The Pages source must be "GitHub Actions". Without a key the script leaves
+the metadata unsigned, which apt refuses by default.
+
 ## Releases
 
 A `vX.Y.Z` tag triggers `.github/workflows/release.yml`, which builds both

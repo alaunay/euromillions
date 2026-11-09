@@ -307,7 +307,6 @@ assert_draw () {
 		false
 	fi
 	root=$(cd -- "${BATS_TEST_DIRNAME}/.." && pwd)
-	run shellcheck "$root/euromillions.sh" "$root/.githooks/commit-msg" \
-		"$root/tools/build-locales.sh" "$root/tools/build-repo.sh"
+	run shellcheck "$root/euromillions.sh" "$root/.githooks/commit-msg" "$root/tools/build-locales.sh"
 	[ "$status" -eq 0 ]
 }

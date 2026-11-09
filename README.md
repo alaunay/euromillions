@@ -55,6 +55,14 @@ few tools it expects.
 Packages are served by the shared
 [packages](https://github.com/alaunay/packages) repository:
 
+Verify the key fingerprint before trusting it:
+
+```console
+$ curl -fsSL https://alaunay.github.io/packages/keys/repo.asc | gpg --show-keys
+```
+
+The fingerprint must be `AA80 3A55 011F D4B6 4A04 A025 FB14 F7F4 D9F9 15F6`.
+
 ```console
 $ curl -fsSL https://alaunay.github.io/packages/keys/repo.asc \
     | sudo gpg --dearmor -o /usr/share/keyrings/alaunay.gpg

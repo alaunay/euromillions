@@ -11,6 +11,7 @@ Conventional Commits prefix when they carry one, and listed under
 
 import argparse
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -44,8 +45,17 @@ ORDER = [
 PREFIX = re.compile(r"^(?P<kind>[a-z]+)(?:\([^)]*\))?!?:\s*(?P<text>.+)$")
 
 
+GIT = shutil.which("git") or ""
+
+
 def git(*args):
-    return subprocess.run(["git", *args], check=True, capture_output=True, text=True).stdout.strip()
+    if not GIT:
+        raise RuntimeError("git is not installed")
+
+    # The arguments are validated tags and fixed flags, never shell input
+    return subprocess.run(  # noqa: S603
+        [GIT, *args], check=True, capture_output=True, text=True
+    ).stdout.strip()
 
 
 def previous_tag(version):
@@ -75,8 +85,15 @@ def section(subject):
     return SECTIONS.get(kind, "Changes"), f"{title} ({kind})" if kind not in SECTIONS else title
 
 
+TAG = re.compile(r"^v\d+\.\d+\.\d+$")
+
+
 def build(version):
     tag = version if version.startswith("v") else f"v{version}"
+
+    if not TAG.match(tag):
+        raise ValueError(f"invalid tag: {version}")
+
     day = git("log", "-1", "--format=%as", tag)
     grouped = {}
 
@@ -142,6 +159,9 @@ def main(argv):
 
     try:
         text = build(arguments.tag)
+    except ValueError as error:
+        print(error, file=sys.stderr)
+        return 2
     except subprocess.CalledProcessError as error:
         print(f"git failed: {error}", file=sys.stderr)
         return 1

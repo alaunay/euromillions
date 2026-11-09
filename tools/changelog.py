@@ -9,9 +9,11 @@ Conventional Commits prefix when they carry one, and listed under
 "Changes" otherwise.
 """
 
+import argparse
 import re
 import subprocess
 import sys
+from pathlib import Path
 
 SECTIONS = {
     "feat": "Added",
@@ -99,18 +101,58 @@ def build(version):
     return "\n".join(out)
 
 
+INTRO = """# Changelog
+
+Generated from the git history by `tools/changelog.py`; run it for a tag to
+write the release notes.
+"""
+
+
+SECTION = re.compile(r"(?m)^## v\S.*$")
+
+
+def merge(path, tag, text):
+    """Insert or replace the section for tag, newest first."""
+    if path.is_file():
+        document = path.read_text(encoding="utf-8")
+        starts = [match.start() for match in SECTION.finditer(document)]
+
+        if starts:
+            header = document[: starts[0]]
+            sections = [
+                document[start:end]
+                for start, end in zip(starts, starts[1:] + [len(document)])
+            ]
+        else:
+            header, sections = document, []
+    else:
+        header, sections = INTRO, []
+
+    sections = [block for block in sections if not block.startswith(f"## {tag} ")]
+    sections.insert(0, text.rstrip() + "\n")
+
+    return header.rstrip() + "\n\n" + "\n".join(sections).rstrip() + "\n"
+
+
 def main(argv):
-    if len(argv) < 2:
-        print("usage: changelog.py vX.Y.Z", file=sys.stderr)
-        return 2
+    parser = argparse.ArgumentParser(description="Build a changelog section")
+    parser.add_argument("tag", help="tag to document, such as v1.2.3")
+    parser.add_argument("--output", help="insert or replace the section in this file")
+    arguments = parser.parse_args(argv[1:])
 
     try:
-        text = build(argv[1])
+        text = build(arguments.tag)
     except subprocess.CalledProcessError as error:
         print(f"git failed: {error}", file=sys.stderr)
         return 1
 
-    sys.stdout.write(text)
+    if arguments.output:
+        path = Path(arguments.output)
+        path.write_text(merge(path, arguments.tag, text), encoding="utf-8")
+        print(f"wrote {path}: {arguments.tag}")
+    else:
+        sys.stdout.write(text)
+
     return 0
 
 

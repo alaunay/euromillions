@@ -51,10 +51,11 @@ and on every pull request, in `.github/workflows/tests.yml`.
 
 ## Changelog
 
-`CHANGELOG.md` is generated, never hand-typed:
+`CHANGELOG.md` is generated, never hand-typed. `--output` inserts or
+replaces the section for one tag, newest first:
 
 ```
-python3 tools/changelog.py vX.Y.Z > CHANGELOG.md
+python3 tools/changelog.py vX.Y.Z --output CHANGELOG.md
 ```
 
 The script groups Conventional Commits prefixes and lists the rest under

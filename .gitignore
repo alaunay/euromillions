@@ -15,3 +15,5 @@ debian/euromillions/
 debian/.debhelper/
 debian/files
 debian/debhelper-build-stamp
+__pycache__/
+*.pyc

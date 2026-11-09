@@ -49,6 +49,18 @@ a throwaway repository.
 GitHub Actions runs shellcheck and the suite on every push to `master`
 and on every pull request, in `.github/workflows/tests.yml`.
 
+## Changelog
+
+`CHANGELOG.md` is generated, never hand-typed:
+
+```
+python3 tools/changelog.py vX.Y.Z > CHANGELOG.md
+```
+
+The script groups Conventional Commits prefixes and lists the rest under
+"Changes". The release workflow runs it for the tag and feeds the release
+body.
+
 ## Code scanning
 
 GitHub code scanning is fed by `tools/shellcheck-sarif.py`, which converts

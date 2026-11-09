@@ -1,6 +1,6 @@
 {
   "name": "alaunay-euromillions",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "author": "Arnaud Launay",
   "summary": "Draw EuroMillions grids from the terminal",
   "license": "GPL-3.0-or-later",

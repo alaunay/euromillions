@@ -13,14 +13,10 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Check the tag against the package version
+      - name: Set the version from the tag
         run: |
-          tag=${GITHUB_REF_NAME#v}
-          version=$(sed -n '1s/.*(\(.*\)).*/\1/p' debian/changelog)
-          [ "$tag" = "$version" ] || {
-            echo "tag $tag does not match debian/changelog $version" >&2
-            exit 1
-          }
+          version=${GITHUB_REF_NAME#v}
+          sed -i "1s/([^)]*)/($version)/" debian/changelog
 
       - name: Install the packaging tools
         run: |
@@ -53,14 +49,10 @@ jobs:
 
       - uses: actions/checkout@v5
 
-      - name: Check the tag against the package version
+      - name: Set the version from the tag
         run: |
-          tag=${GITHUB_REF_NAME#v}
-          version=$(sed -n 's/^Version:[[:space:]]*\(.*\)/\1/p' packaging/rpm/euromillions.spec)
-          [ "$tag" = "$version" ] || {
-            echo "tag $tag does not match the spec version $version" >&2
-            exit 1
-          }
+          version=${GITHUB_REF_NAME#v}
+          sed -i "s/^Version:.*/Version:        $version/" packaging/rpm/euromillions.spec
 
       - name: Build the RPM
         run: |

@@ -73,7 +73,7 @@ jobs:
       - name: Build the RPM
         run: |
           mkdir -p dist rpmbuild/SOURCES
-          version=1.0.0
+          version=$(sed -n 's/^Version:[[:space:]]*\(.*\)/\1/p' packaging/rpm/euromillions.spec)
           git archive --format=tar.gz --prefix="euromillions-$version/" \
             --output="rpmbuild/SOURCES/euromillions-$version.tar.gz" HEAD
           rpmbuild -bb packaging/rpm/euromillions.spec --define "_topdir $PWD/rpmbuild"

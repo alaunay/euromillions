@@ -12,7 +12,7 @@ jobs:
   bats:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
       - name: Install the tools
         run: |
@@ -39,7 +39,7 @@ jobs:
   package-deb:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
       - name: Install the packaging tools
         run: |
@@ -55,7 +55,7 @@ jobs:
           mkdir -p dist
           cp ../euromillions_*.deb dist/
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: debian-package
           path: dist/*.deb
@@ -70,7 +70,7 @@ jobs:
           dnf install -y git tar gzip rpm-build gettext
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
       - name: Build the RPM
         run: |
@@ -81,7 +81,7 @@ jobs:
           rpmbuild -bb packaging/rpm/euromillions.spec --define "_topdir $PWD/rpmbuild"
           cp rpmbuild/RPMS/noarch/*.rpm dist/
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: rpm-package
           path: dist/*.rpm
@@ -89,7 +89,7 @@ jobs:
   macos:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
       - name: Install the tools
         run: |
@@ -104,9 +104,9 @@ jobs:
   freebsd:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
-      - uses: vmactions/freebsd-vm@v1
+      - uses: vmactions/freebsd-vm@811efaaac0668df8bfb8308c3ec997b5ab50037b # v1
         with:
           prepare: pkg install -y bash coreutils gettext
           run: |
@@ -121,7 +121,7 @@ jobs:
       contents: read
       security-events: write
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
       - name: Install shellcheck
         run: |
@@ -134,7 +134,7 @@ jobs:
             tools/build-locales.sh > shellcheck.json || true
           python3 tools/shellcheck-sarif.py shellcheck.json shellcheck.sarif
 
-      - uses: github/codeql-action/upload-sarif@v3
+      - uses: github/codeql-action/upload-sarif@9418214df1f2c4b8128c770156c409013b07d6b9 # v3
         with:
           sarif_file: shellcheck.sarif
           category: shellcheck

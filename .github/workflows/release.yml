@@ -11,7 +11,13 @@ jobs:
   deb:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: Check the tag
+        run: |
+          if ! printf '%s\n' "$GITHUB_REF_NAME" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "invalid release tag: $GITHUB_REF_NAME" >&2
+            exit 1
+          fi
 
       - name: Set the version from the tag
         run: |
@@ -32,7 +38,7 @@ jobs:
           mkdir -p dist
           cp ../euromillions_*.deb dist/
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: debian-package
           path: dist/*.deb
@@ -47,7 +53,13 @@ jobs:
           dnf install -y git tar gzip rpm-build gettext
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: Check the tag
+        run: |
+          if ! printf '%s\n' "$GITHUB_REF_NAME" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "invalid release tag: $GITHUB_REF_NAME" >&2
+            exit 1
+          fi
 
       - name: Set the version from the tag
         run: |
@@ -63,7 +75,7 @@ jobs:
           rpmbuild -bb packaging/rpm/euromillions.spec --define "_topdir $PWD/rpmbuild"
           cp rpmbuild/RPMS/noarch/*.rpm dist/
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: rpm-package
           path: dist/*.rpm
@@ -71,17 +83,31 @@ jobs:
   publish:
     needs: [deb, rpm]
     runs-on: ubuntu-latest
-    env:
-      PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           fetch-depth: 0
+
+      - name: Check the tag
+        run: |
+          if ! printf '%s\n' "$GITHUB_REF_NAME" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "invalid release tag: $GITHUB_REF_NAME" >&2
+            exit 1
+          fi
+
+      - name: Check the packages token
+        id: token
+        env:
+          TOKEN: ${{ secrets.PACKAGES_TOKEN }}
+        run: |
+          if [ -n "$TOKEN" ]; then
+            echo "present=yes" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Generate the release notes
         run: python3 tools/changelog.py "$GITHUB_REF_NAME" > release-notes.md
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           path: dist
           merge-multiple: true
@@ -97,7 +123,7 @@ jobs:
           gh release upload "$GITHUB_REF_NAME" dist/* --clobber
 
       - name: Notify the packages repository
-        if: env.PACKAGES_TOKEN != ''
+        if: steps.token.outputs.present == 'yes'
         env:
           GH_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
         run: |

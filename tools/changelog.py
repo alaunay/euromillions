@@ -121,7 +121,7 @@ def merge(path, tag, text):
             header = document[: starts[0]]
             sections = [
                 document[start:end]
-                for start, end in zip(starts, starts[1:] + [len(document)])
+                for start, end in zip(starts, starts[1:] + [len(document)], strict=False)
             ]
         else:
             header, sections = document, []

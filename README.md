@@ -265,6 +265,33 @@ $ rpmbuild -bb packaging/rpm/euromillions.spec --define "_topdir $PWD/rpmbuild"
 The packages install `euromillions` in `/usr/bin` and its catalogues in
 `/usr/share/euromillions`. CI builds both and attaches them to the run.
 
+## Install from the repository
+
+Each release publishes an apt and a dnf repository on GitHub Pages.
+
+Debian and Ubuntu:
+
+```console
+$ curl -fsSL https://alaunay.github.io/euromillions/keys/repo.asc \
+    | sudo gpg --dearmor -o /usr/share/keyrings/euromillions.gpg
+$ echo "deb [signed-by=/usr/share/keyrings/euromillions.gpg] \
+https://alaunay.github.io/euromillions/apt stable main" \
+    | sudo tee /etc/apt/sources.list.d/euromillions.list
+$ sudo apt update && sudo apt install euromillions
+```
+
+CentOS and RHEL:
+
+```console
+$ sudo curl -fsSL -o /etc/yum.repos.d/euromillions.repo \
+    https://alaunay.github.io/euromillions/euromillions.repo
+$ sudo dnf install euromillions
+```
+
+The package signatures and the repository metadata are checked against the
+published key. The pages workflow rebuilds both repositories from the
+release assets on every published release.
+
 ## Changelog
 
 [`CHANGELOG.md`](CHANGELOG.md) is generated from the git history:

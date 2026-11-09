@@ -71,6 +71,8 @@ jobs:
   publish:
     needs: [deb, rpm]
     runs-on: ubuntu-latest
+    env:
+      PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -93,3 +95,13 @@ jobs:
             gh release create "$GITHUB_REF_NAME" \
               --title "$GITHUB_REF_NAME" --notes-file release-notes.md
           gh release upload "$GITHUB_REF_NAME" dist/* --clobber
+
+      - name: Notify the packages repository
+        if: env.PACKAGES_TOKEN != ''
+        env:
+          GH_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
+        run: |
+          gh api repos/alaunay/packages/dispatches --method POST \
+            -f event_type=release \
+            -F "client_payload[repository]=$GITHUB_REPOSITORY" \
+            -F "client_payload[tag]=$GITHUB_REF_NAME"

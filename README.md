@@ -265,6 +265,18 @@ $ rpmbuild -bb packaging/rpm/euromillions.spec --define "_topdir $PWD/rpmbuild"
 The packages install `euromillions` in `/usr/bin` and its catalogues in
 `/usr/share/euromillions`. CI builds both and attaches them to the run.
 
+## Changelog
+
+[`CHANGELOG.md`](CHANGELOG.md) is generated from the git history:
+
+```console
+$ python3 tools/changelog.py v0.0.1
+```
+
+The release workflow runs the same command for the new tag and uses the
+output as the release notes. Commits carrying a Conventional Commits
+prefix are grouped; the rest land under "Changes".
+
 ## Code scanning
 
 GitHub code scanning shows the shellcheck findings as alerts. ShellCheck has

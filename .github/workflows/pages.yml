@@ -1,8 +1,9 @@
 name: pages
 
 on:
-  release:
-    types: [published]
+  workflow_run:
+    workflows: ["release"]
+    types: [completed]
   workflow_dispatch:
     inputs:
       tag:
@@ -20,6 +21,7 @@ concurrency:
 
 jobs:
   publish:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -30,8 +32,13 @@ jobs:
       - name: Resolve the tag
         id: release
         env:
-          INPUT_TAG: ${{ github.event.inputs.tag }}
-        run: echo "tag=${INPUT_TAG:-$GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          TAG: ${{ github.event.inputs.tag || github.event.workflow_run.head_branch }}
+        run: |
+          if [ -z "$TAG" ]; then
+            echo "no tag to publish" >&2
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
       - name: Download the release assets
         env:

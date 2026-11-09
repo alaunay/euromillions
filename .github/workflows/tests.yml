@@ -31,7 +31,7 @@ jobs:
           python3 -m py_compile tools/changelog.py tools/shellcheck-sarif.py
 
       - name: Run shellcheck
-        run: shellcheck euromillions.sh .githooks/commit-msg tools/build-locales.sh
+        run: shellcheck euromillions.sh .githooks/commit-msg tools/build-locales.sh tools/build-repo.sh
 
       - name: Run the test suite
         run: bats test test/shell
@@ -44,7 +44,7 @@ jobs:
       - name: Install the packaging tools
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq bats build-essential debhelper gettext locales shellcheck
+          sudo apt-get install -y -qq bats build-essential createrepo-c debhelper dpkg-dev gettext locales rpm shellcheck
 
       - name: Generate the French locale
         run: sudo locale-gen fr_FR.UTF-8

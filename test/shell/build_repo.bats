@@ -64,6 +64,7 @@ make_key() {
 
 @test "warns without a signing key" {
 	command -v dpkg-scanpackages >/dev/null || skip "dpkg-scanpackages is missing"
+	command -v apt-ftparchive >/dev/null || skip "apt-ftparchive is missing"
 
 	run env -u REPO_GPG_KEY_ID REPO_ORIGIN=test REPO_LABEL=test REPO_NAME=test \
 		"$ROOT/tools/build-repo.sh" "$DIST" "$SITE"
@@ -77,6 +78,7 @@ make_key() {
 @test "builds a signed apt repository" {
 	command -v dpkg-deb >/dev/null || skip "dpkg-deb is missing"
 	command -v dpkg-scanpackages >/dev/null || skip "dpkg-scanpackages is missing"
+	command -v apt-ftparchive >/dev/null || skip "apt-ftparchive is missing"
 	command -v gpg >/dev/null || skip "gpg is missing"
 
 	make_deb

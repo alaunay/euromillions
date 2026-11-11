@@ -113,8 +113,13 @@ falls back to 256-colour codes otherwise, so the hues match the demo.
 
 ## Configuration
 
-The grid shape comes from the environment, with the EuroMillions values
-as defaults:
+There is no configuration file. Every setting is an environment variable
+or a command-line option, and the script reads the environment once at
+start-up. Variables not listed here have no effect.
+
+### Grid
+
+The EuroMillions grid is the default:
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
@@ -130,6 +135,30 @@ $ COUNTNUMBERS=3 NUMBERSUP=10 ./euromillions.sh
 Numbers: 2 6 9
 Stars: 4 11
 ```
+
+### Jackpot alert
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `ALERT_THRESHOLD` | `100000000` | mail only at or above this amount, in euro |
+| `ALERT_TO` | unset | recipient; `--cron` exits 1 without it |
+| `ALERT_MAILER` | auto | `sendmail`, `msmtp`, `mail`, or a path; auto-detected |
+| `JACKPOT_URL` | FDJ endpoint | where to read the estimated jackpot |
+| `CURL` | `curl` | HTTP client used to read the jackpot |
+
+These variables apply to `--cron` and `--threshold`. A plain run ignores
+them and never touches the network.
+
+### Output and runtime
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `EUROMILLIONS_LANG` | locale | output language, overridden by `--lang` |
+| `EUROMILLIONS_COLOR` | `auto` | `auto`, `always`, or `never` |
+| `EUROMILLIONS_DATADIR` | script directory | where `po/` and `locale/` live |
+| `SHUF` | `shuf` | shuffle binary, `gshuf` on macOS and FreeBSD |
+| `RANDOM_SOURCE` | `/dev/urandom` | entropy source for `shuf` |
+| `NO_COLOR` | unset | any value disables colours |
 
 ---
 
@@ -157,21 +186,18 @@ $ ./euromillions.sh --threshold
 100 M€
 ```
 
-A cron entry every Wednesday at noon:
+A cron entry every Wednesday at 11:00:
 
 ```cron
-0 12 * * 3 ALERT_TO=me@example.org /usr/bin/euromillions --cron
+0 11 * * 3 ALERT_TO=me@example.org /usr/bin/euromillions --cron
 ```
+
+Set `PATH` in the crontab when `sendmail` or `curl` lives outside cron's
+default path. All variables are listed in
+[Configuration](#configuration).
 
 It needs `curl` and network access. The endpoint is FDJ's public draw
 information service, not an official API; `JACKPOT_URL` overrides it.
-
-| Variable | Default | Meaning |
-| --- | --- | --- |
-| `ALERT_THRESHOLD` | `100000000` | mail only at or above this amount |
-| `ALERT_TO` | unset | recipient; cron exits 1 without it |
-| `ALERT_MAILER` | auto | `sendmail`, `msmtp`, `mail`, or a path |
-| `JACKPOT_URL` | FDJ endpoint | where to read the estimated jackpot |
 
 The message goes through `sendmail -t` when the binary is `sendmail` or
 `msmtp`, and through `mail -s` otherwise. Below the threshold, `--cron`

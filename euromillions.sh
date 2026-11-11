@@ -44,6 +44,7 @@ CURL=${CURL:-curl}
 ALERT_THRESHOLD=${ALERT_THRESHOLD:-100000000}
 ALERT_TO=${ALERT_TO:-}
 ALERT_MAILER=${ALERT_MAILER:-}
+PLAY_URL=${PLAY_URL:-https://www.fdj.fr/jeux-de-tirage/euromillions}
 
 # gettext binary, empty when the package is absent; see _
 GETTEXT=$(command -v gettext || true)
@@ -341,6 +342,20 @@ fetch_jackpot () {
 	printf '%s' "$value"
 }
 
+# The alert message: plain text, framed, no HTML
+alert_body () {
+	local amount=$1
+
+	printf '%s\n' \
+		'--------------------------------------------------' \
+		" $(_ 'EUROMILLIONS - NEXT DRAW')" \
+		'--------------------------------------------------' \
+		" $(_ 'Jackpot:') ${amount}" \
+		" $(_ 'Play:') ${PLAY_URL}" \
+		'--------------------------------------------------' \
+		" $(_ 'Fill a grid before the draw. Good luck!')"
+}
+
 # Mail the next jackpot when it reaches the threshold, and stay silent otherwise
 run_cron () {
 	local jackpot amount
@@ -360,8 +375,8 @@ run_cron () {
 		return 1
 	fi
 
-	send_alert "$(format_message "$(_ 'Euromillions: next draw %s')" "$amount")" \
-		"$(format_message "$(_ 'next draw: %s')" "$amount")"
+	send_alert "$(format_message "$(_ 'Euromillions: %s next jackpot')" "$amount")" \
+		"$(alert_body "$amount")"
 }
 
 language=$(detect_language)

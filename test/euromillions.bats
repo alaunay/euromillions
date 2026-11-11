@@ -342,7 +342,13 @@ make_mailer () {
 	[ "$status" -eq 0 ]
 	[ -z "$output" ]
 	[ -f "$TEST_TMPDIR/mail.out" ]
-	grep -q 'next draw: 150 M€' "$TEST_TMPDIR/mail.out"
+	grep -q 'ARGS: -s Euromillions: 150 M€ next jackpot me@example.org' \
+		"$TEST_TMPDIR/mail.out"
+	grep -q '^ Jackpot: 150 M€$' "$TEST_TMPDIR/mail.out"
+	grep -q '^ Play: https://www.fdj.fr/jeux-de-tirage/euromillions$' \
+		"$TEST_TMPDIR/mail.out"
+	grep -q '^ Fill a grid before the draw' "$TEST_TMPDIR/mail.out"
+	! grep -q '<html' "$TEST_TMPDIR/mail.out"
 }
 
 @test "cron stays quiet below the threshold" {
@@ -362,7 +368,7 @@ make_mailer () {
 		JACKPOT_URL="file://$TEST_TMPDIR/jackpot.json" "$SCRIPT" --cron
 	[ "$status" -eq 0 ]
 	[ -f "$TEST_TMPDIR/mail.out" ]
-	grep -q 'next draw: 100 M€' "$TEST_TMPDIR/mail.out"
+	grep -q '^ Jackpot: 100 M€$' "$TEST_TMPDIR/mail.out"
 }
 
 @test "cron converts the jackpot value and scale" {
@@ -373,7 +379,7 @@ make_mailer () {
 		ALERT_MAILER="$TEST_TMPDIR/mailer" \
 		JACKPOT_URL="file://$TEST_TMPDIR/jackpot.json" "$SCRIPT" --cron
 	[ "$status" -eq 0 ]
-	grep -q 'next draw: 17 M€' "$TEST_TMPDIR/mail.out"
+	grep -q '^ Jackpot: 17 M€$' "$TEST_TMPDIR/mail.out"
 }
 
 @test "cron exits 1 when the jackpot cannot be read" {

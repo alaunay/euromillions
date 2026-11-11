@@ -1,11 +1,14 @@
-# Translation template for euromillions.
-# Copyright (C) 2026 Arnaud Launay
-# This file is distributed under the same licence as the project.
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: euromillions\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-08 21:00+0100\n"
+"POT-Creation-Date: 2026-11-11 23:03+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -14,93 +17,94 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: euromillions.sh
+#: euromillions.sh:157 euromillions.sh:420
 msgid "Numbers"
 msgstr ""
 
-#: euromillions.sh
-msgid "Stars"
-msgstr ""
-
-#: euromillions.sh
-msgid "draw failed"
-msgstr ""
-
-#: euromillions.sh
-msgid "short draw"
-msgstr ""
-
-#: euromillions.sh
-msgid "Usage:"
-msgstr ""
-
-#: euromillions.sh
-msgid "Draw %s numbers from %s to %s and %s stars from %s to %s."
-msgstr ""
-
-#: euromillions.sh
-msgid "Options:"
-msgstr ""
-
-#: euromillions.sh
-msgid "output language, overriding the locale"
-msgstr ""
-
-#: euromillions.sh
-msgid "never use colours"
-msgstr ""
-
-#: euromillions.sh
-msgid "show this help"
-msgstr ""
-
-#: euromillions.sh
-msgid "Languages:"
-msgstr ""
-
-#: euromillions.sh
-msgid "unknown argument: %s"
-msgstr ""
-
-#: euromillions.sh
-msgid "option %s needs a language code"
-msgstr ""
-
+#: euromillions.sh:159
 msgid "no translation for %s, using English"
 msgstr ""
 
-#: euromillions.sh
-msgid "estimated jackpot, triggers the alert above the threshold"
+#: euromillions.sh:191
+msgid "Usage:"
 msgstr ""
 
-#: euromillions.sh
+#: euromillions.sh:192
+msgid "Draw %s numbers from %s to %s and %s stars from %s to %s."
+msgstr ""
+
+#: euromillions.sh:195
+msgid "Options:"
+msgstr ""
+
+#: euromillions.sh:196
+msgid "output language, overriding the locale"
+msgstr ""
+
+#: euromillions.sh:197
+msgid "never use colours"
+msgstr ""
+
+#: euromillions.sh:198
+msgid "show this help"
+msgstr ""
+
+#: euromillions.sh:199
+msgid "Languages:"
+msgstr ""
+
+#: euromillions.sh:222
+msgid "draw failed"
+msgstr ""
+
+#: euromillions.sh:229
+msgid "short draw"
+msgstr ""
+
+#: euromillions.sh:245
 msgid "invalid ALERT_DAYS: %s"
 msgstr ""
 
-#: euromillions.sh
+#: euromillions.sh:277
 msgid "alert: no mailer found, set ALERT_MAILER"
 msgstr ""
 
-#: euromillions.sh
-msgid "invalid jackpot: %s"
+#: euromillions.sh:297
+msgid "alert: curl is not installed"
 msgstr ""
 
-#: euromillions.sh
+#: euromillions.sh:303
+msgid "alert: cannot read the jackpot from %s"
+msgstr ""
+
+#: euromillions.sh:311
+msgid "alert: the jackpot response is invalid"
+msgstr ""
+
+#: euromillions.sh:340
 msgid "invalid ALERT_THRESHOLD: %s"
 msgstr ""
 
-#: euromillions.sh
+#: euromillions.sh:348 euromillions.sh:356
 msgid "possible gain next time: %s€"
 msgstr ""
 
-#: euromillions.sh
+#: euromillions.sh:351
 msgid "alert: ALERT_TO is not set, no mail sent"
 msgstr ""
 
-#: euromillions.sh
+#: euromillions.sh:355
 msgid "Euromillions: possible gain next time: %s€"
 msgstr ""
 
-#: euromillions.sh
-msgid "option %s needs an amount"
+#: euromillions.sh:402
+msgid "option %s needs a language code"
+msgstr ""
+
+#: euromillions.sh:409
+msgid "unknown argument: %s"
+msgstr ""
+
+#: euromillions.sh:421
+msgid "Stars"
 msgstr ""

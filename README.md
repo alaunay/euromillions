@@ -133,16 +133,18 @@ Stars: 4 11
 
 ## Jackpot alerts
 
-The script can mail an alert when the next draw can pay at least a
-threshold. It has no network access, so give it the estimated jackpot,
-with `--jackpot` or `JACKPOT`:
+The script reads the estimated jackpot of the next draw from the FDJ draw
+information endpoint, then mails an alert when it reaches the threshold:
 
 ```console
-$ ALERT_TO=me@example.org JACKPOT=150000000 ./euromillions.sh
+$ ALERT_TO=me@example.org ./euromillions.sh
 Numbers: 4 8 13 36 46
 Stars: 3 12
-possible gain next time: 150000000€
+possible gain next time: 17000000€
 ```
+
+It needs `curl` and network access. The endpoint is FDJ's public draw
+information service, not an official API; `JACKPOT_URL` overrides it.
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
@@ -150,10 +152,12 @@ possible gain next time: 150000000€
 | `ALERT_DAYS` | `fri` | `tue`, `fri`, `tue,fri`, or `both` |
 | `ALERT_TO` | unset | recipient; without it the alert is printed but not mailed |
 | `ALERT_MAILER` | auto | `sendmail`, `msmtp`, `mail`, or a path |
+| `JACKPOT_URL` | FDJ endpoint | where to read the estimated jackpot |
 
 The message goes through `sendmail -t` when the binary is `sendmail` or
 `msmtp`, and through `mail -s` otherwise. Defaults warn on Friday only, for
-a jackpot of 100 million euro or more.
+a jackpot of 100 million euro or more. When the endpoint is unreachable,
+the script says so on stderr and draws as usual.
 
 ## Languages
 
@@ -182,6 +186,7 @@ Translation work, including adding a language, is described in
 - Bash 4 or later
 - GNU coreutils, for `shuf` and `sort`
 - gettext, for a language other than English, plus that language's locale
+- curl, for the jackpot alert
 
 `shuf` ships with Linux. macOS and FreeBSD provide it through GNU
 coreutils, under the name `gshuf`:

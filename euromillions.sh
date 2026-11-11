@@ -39,7 +39,8 @@ SHUF=${SHUF:-shuf}
 COLOR_MODE=${EUROMILLIONS_COLOR:-auto}
 
 # Jackpot alert: mail when the next draw can pay at least this much
-JACKPOT=${JACKPOT:-}
+JACKPOT_URL=${JACKPOT_URL:-https://www.sto.api.fdj.fr/anonymous/service-draw-info/v3/draws?game_name=euromillions&current=true}
+CURL=${CURL:-curl}
 ALERT_THRESHOLD=${ALERT_THRESHOLD:-100000000}
 ALERT_DAYS=${ALERT_DAYS:-fri}
 ALERT_TO=${ALERT_TO:-}
@@ -194,7 +195,6 @@ usage () {
 	printf '%s\n' "$(_ 'Options:')"
 	printf '  -l, --lang CODE  %s\n' "$(_ 'output language, overriding the locale')"
 	printf '      --no-color   %s\n' "$(_ 'never use colours')"
-	printf '      --jackpot EUR  %s\n' "$(_ 'estimated jackpot, triggers the alert above the threshold')"
 	printf '  -h, --help       %s\n' "$(_ 'show this help')"
 	printf '\n%s %s\n' "$(_ 'Languages:')" "$(languages)"
 }
@@ -289,17 +289,51 @@ send_alert () {
 	esac
 }
 
+# The next jackpot, in euro, from the FDJ draw information endpoint
+fetch_jackpot () {
+	local response raw value scale
+
+	if ! command -v "$CURL" >/dev/null 2>&1; then
+		printf '%s\n' "$(_ 'alert: curl is not installed')" >&2
+		return 1
+	fi
+
+	if ! response=$("$CURL" -fsS --max-time 10 -H 'User-Agent: euromillions' \
+		"$JACKPOT_URL" 2>/dev/null); then
+		printf '%s\n' "$(format_message "$(_ 'alert: cannot read the jackpot from %s')" "$JACKPOT_URL")" >&2
+		return 1
+	fi
+
+	raw=$(printf '%s' "$response" |
+		sed -n 's/.*"estimated_jackpot":\[{"value":\([0-9]*\),"currency":"EUR","scale":\([0-9]*\)}.*/\1 \2/p')
+
+	if [ -z "$raw" ]; then
+		printf '%s\n' "$(_ 'alert: the jackpot response is invalid')" >&2
+		return 1
+	fi
+
+	value=${raw% *}
+	scale=${raw#* }
+
+	while (( scale > 0 )); do
+		value=$((value / 10))
+		scale=$((scale - 1))
+	done
+
+	printf '%s' "$value"
+}
+
 # Mail the next jackpot when it reaches the threshold, on an alert day
 maybe_alert () {
-	case "$JACKPOT" in
-		'') return 0 ;;
-		*[!0-9]*)
-			printf '%s\n' "$(format_message "$(_ 'invalid jackpot: %s')" "$JACKPOT")" >&2
-			exit 2
-			;;
-	esac
+	local jackpot
 
 	alert_days >/dev/null
+
+	if ! jackpot=$(fetch_jackpot); then
+		return 0
+	fi
+
+	JACKPOT=$jackpot
 
 	case "$ALERT_THRESHOLD" in
 		*[!0-9]*)
@@ -343,19 +377,6 @@ while (( $# )); do
 			language=${1#*=}
 			shift
 			;;
-		--jackpot)
-			if (( $# < 2 )); then
-				error_kind=needs_jackpot
-				error_arg=$1
-				break
-			fi
-			JACKPOT=$2
-			shift 2
-			;;
-		--jackpot=*)
-			JACKPOT=${1#*=}
-			shift
-			;;
 		--no-color)
 			COLOR_MODE=never
 			shift
@@ -379,13 +400,6 @@ warn_missing_translation "$language"
 if [ "$error_kind" = needs_code ]; then
 	printf '%s%s%s\n' "${ERROR_COLOR}" \
 		"$(format_message "$(_ 'option %s needs a language code')" "${error_arg}")" "${ERROR_RESET}" >&2
-	usage >&2
-	exit 2
-fi
-
-if [ "$error_kind" = needs_jackpot ]; then
-	printf '%s%s%s\n' "${ERROR_COLOR}" \
-		"$(format_message "$(_ 'option %s needs an amount')" "${error_arg}")" "${ERROR_RESET}" >&2
 	usage >&2
 	exit 2
 fi

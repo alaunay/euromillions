@@ -4,7 +4,8 @@
 
 setup() {
 	ROOT="$(cd "${BATS_TEST_DIRNAME}/../.." && pwd)"
-	SANDBOX="${BATS_TEST_TMPDIR}/repo"
+	TEST_TMPDIR=${BATS_TEST_TMPDIR:-$(mktemp -d)}
+	SANDBOX="${TEST_TMPDIR}/repo"
 
 	mkdir -p "${SANDBOX}/tools" "${SANDBOX}/po"
 	cp "${ROOT}/tools/build-locales.sh" "${SANDBOX}/tools/"

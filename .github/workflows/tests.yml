@@ -10,17 +10,34 @@ permissions:
 
 jobs:
   bats:
-    runs-on: ubuntu-22.04
+    name: bats / ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: ubuntu-22.04
+            image: ubuntu:22.04
+          - name: ubuntu-24.04
+            image: ubuntu:24.04
+          - name: ubuntu-26.04
+            image: ubuntu:26.04
+          - name: debian-12
+            image: debian:12
+          - name: debian-13
+            image: debian:13
+    container:
+      image: ${{ matrix.image }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install the tools
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq bats gettext locales shellcheck
+          apt-get update -qq
+          apt-get install -y -qq bats gettext git locales python3 shellcheck
 
       - name: Generate the French locale
-        run: sudo locale-gen fr_FR.UTF-8
+        run: locale-gen fr_FR.UTF-8
 
       - name: Build the catalogues
         run: tools/build-locales.sh
@@ -36,18 +53,46 @@ jobs:
       - name: Run the test suite
         run: bats test test/shell
 
-  package-deb:
+  markdown:
+    name: markdown
     runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: DavidAnson/markdownlint-cli2-action@696eb3f2509270d7b882d2aa68347bc676e7af34 # v25.0.0
+        with:
+          globs: |
+            **/*.md
+
+  package-deb:
+    name: package-deb / ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: ubuntu-22.04
+            image: ubuntu:22.04
+          - name: ubuntu-24.04
+            image: ubuntu:24.04
+          - name: ubuntu-26.04
+            image: ubuntu:26.04
+          - name: debian-12
+            image: debian:12
+          - name: debian-13
+            image: debian:13
+    container:
+      image: ${{ matrix.image }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install the packaging tools
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq bats build-essential debhelper gettext locales shellcheck
+          apt-get update -qq
+          apt-get install -y -qq bats build-essential debhelper gettext git locales shellcheck
 
       - name: Generate the French locale
-        run: sudo locale-gen fr_FR.UTF-8
+        run: locale-gen fr_FR.UTF-8
 
       - name: Build the Debian package
         run: |
@@ -57,17 +102,27 @@ jobs:
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: debian-package
+          name: debian-package-${{ matrix.name }}
           path: dist/*.deb
 
   package-rpm:
+    name: package-rpm / ${{ matrix.name }}
     runs-on: ubuntu-latest
-    container: quay.io/centos/centos:stream10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: centos-stream9
+            image: quay.io/centos/centos:stream9
+          - name: centos-stream10
+            image: quay.io/centos/centos:stream10
+    container:
+      image: ${{ matrix.image }}
     steps:
       - name: Install the packaging tools
         run: |
-          dnf config-manager --set-enabled crb
-          dnf install -y git tar gzip rpm-build gettext
+          dnf install -y epel-release
+          dnf install -y bats gettext git rpm-build tar gzip
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -83,11 +138,16 @@ jobs:
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: rpm-package
+          name: rpm-package-${{ matrix.name }}
           path: dist/*.rpm
 
   macos:
-    runs-on: macos-latest
+    name: macos / ${{ matrix.name }}
+    runs-on: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        name: [macos-15, macos-26]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -102,18 +162,24 @@ jobs:
         run: bats test test/shell
 
   freebsd:
+    name: freebsd / ${{ matrix.name }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        name: ["14.5", "15.2"]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - uses: vmactions/freebsd-vm@811efaaac0668df8bfb8308c3ec997b5ab50037b # v1
         with:
-          prepare: pkg install -y bash coreutils gettext
+          release: ${{ matrix.name }}
+          prepare: pkg install -y bash coreutils gettext bats-core git
           run: |
             export PATH=/usr/local/bin:$PATH
             export SHUF=gshuf
-            bash euromillions.sh | grep -q '^Numbers: '
-            bash euromillions.sh --help | grep -q 'Languages: en fr'
+            tools/build-locales.sh
+            bats test test/shell
 
   code-scanning:
     runs-on: ubuntu-latest
@@ -138,3 +204,26 @@ jobs:
         with:
           sarif_file: shellcheck.sarif
           category: shellcheck
+
+  ci-ok:
+    name: ci-ok
+    if: always()
+    needs:
+      - bats
+      - markdown
+      - package-deb
+      - package-rpm
+      - macos
+      - freebsd
+      - code-scanning
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check that every job passed
+        run: |
+          [ "${{ needs.bats.result }}" = success ]
+          [ "${{ needs.markdown.result }}" = success ]
+          [ "${{ needs.package-deb.result }}" = success ]
+          [ "${{ needs.package-rpm.result }}" = success ]
+          [ "${{ needs.macos.result }}" = success ]
+          [ "${{ needs.freebsd.result }}" = success ]
+          [ "${{ needs.code-scanning.result }}" = success ]

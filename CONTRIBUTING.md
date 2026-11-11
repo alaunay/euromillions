@@ -21,9 +21,11 @@ $ bats test test/shell
 $ shellcheck euromillions.sh .githooks/commit-msg tools/build-locales.sh
 ```
 
-The bats suite runs the shellcheck command as one of its cases, so a
-missing binary fails the case rather than skipping it. Any finding, at any
-severity, is a failure.
+The bats suite runs shellcheck as one of its cases, and skips that case
+when the binary is absent. The Linux and macOS jobs install shellcheck, so
+a finding at any severity fails the build. Markdown files are checked with
+markdownlint-cli2, configured in `.markdownlint.jsonc`; the `markdown` job
+runs it on every pull request.
 
 `test/shell/` also covers the two other shell scripts: the catalogue
 builder, exercised in a sandbox, and the commit hook, exercised in a
@@ -33,7 +35,9 @@ The cases cover the output shape, the ranges, the order, the language
 resolution, and the failure paths. GitHub Actions installs both tools,
 generates the French locale, builds the catalogues, then runs shellcheck
 and the suite on every push to `master` and on every pull request, in
-[`.github/workflows/tests.yml`](.github/workflows/tests.yml).
+[`.github/workflows/tests.yml`](.github/workflows/tests.yml). The suite runs
+in containers on Ubuntu 22.04, 24.04, and 26.04, Debian 12 and 13, and
+CentOS Stream 9 and 10; on macOS 15 and 26; and on FreeBSD 14.5 and 15.2.
 
 `RANDOM_SOURCE` points `shuf` at another entropy file, which makes a draw
 reproducible.
@@ -149,8 +153,8 @@ a finding.
 - carry one `Co-authored-by` trailer per additional author when someone
   else helped write the patch, an AI model included; a change written
   alone needs none;
-- pass the `bats` check, which runs shellcheck, generates the French
-  locale, builds the catalogues, and runs the suite.
+- pass the `ci-ok` check, which requires the `bats`, `markdown`, Debian
+  package, RPM package, macOS, FreeBSD, and code scanning jobs.
 
 ```console
 $ git switch -c my-change

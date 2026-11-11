@@ -254,8 +254,9 @@ $ SHUF=gshuf ./euromillions.sh
 ```
 
 Without `gettext`, or without the language's catalogue, the output stays
-English and a warning names the language. The test suite runs on Linux,
-macOS, and FreeBSD in CI.
+English and a warning names the language. CI runs the suite on Ubuntu
+22.04, 24.04, and 26.04, Debian 12 and 13, CentOS Stream 9 and 10, macOS 15
+and 26, and FreeBSD 14.5 and 15.2.
 
 ---
 

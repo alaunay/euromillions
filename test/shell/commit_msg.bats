@@ -4,7 +4,8 @@
 
 setup() {
 	ROOT="$(cd "${BATS_TEST_DIRNAME}/../.." && pwd)"
-	REPO="${BATS_TEST_TMPDIR}/repo"
+	TEST_TMPDIR=${BATS_TEST_TMPDIR:-$(mktemp -d)}
+	REPO="${TEST_TMPDIR}/repo"
 
 	mkdir -p "${REPO}/.githooks"
 	cp "${ROOT}/.githooks/commit-msg" "${REPO}/.githooks/"

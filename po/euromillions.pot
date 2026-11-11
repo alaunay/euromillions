@@ -68,3 +68,39 @@ msgstr ""
 
 msgid "no translation for %s, using English"
 msgstr ""
+
+#: euromillions.sh
+msgid "estimated jackpot, triggers the alert above the threshold"
+msgstr ""
+
+#: euromillions.sh
+msgid "invalid ALERT_DAYS: %s"
+msgstr ""
+
+#: euromillions.sh
+msgid "alert: no mailer found, set ALERT_MAILER"
+msgstr ""
+
+#: euromillions.sh
+msgid "invalid jackpot: %s"
+msgstr ""
+
+#: euromillions.sh
+msgid "invalid ALERT_THRESHOLD: %s"
+msgstr ""
+
+#: euromillions.sh
+msgid "possible gain next time: %s€"
+msgstr ""
+
+#: euromillions.sh
+msgid "alert: ALERT_TO is not set, no mail sent"
+msgstr ""
+
+#: euromillions.sh
+msgid "Euromillions: possible gain next time: %s€"
+msgstr ""
+
+#: euromillions.sh
+msgid "option %s needs an amount"
+msgstr ""

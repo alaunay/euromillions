@@ -56,3 +56,30 @@ msgstr "l'option %s attend un code de langue"
 
 msgid "no translation for %s, using English"
 msgstr "pas de traduction pour %s, sortie en anglais"
+
+msgid "estimated jackpot, triggers the alert above the threshold"
+msgstr "montant estimé du prochain tirage, déclenche l'alerte au-dessus du seuil"
+
+msgid "invalid ALERT_DAYS: %s"
+msgstr "ALERT_DAYS invalide : %s"
+
+msgid "alert: no mailer found, set ALERT_MAILER"
+msgstr "alerte : aucun outil d'envoi, définissez ALERT_MAILER"
+
+msgid "invalid jackpot: %s"
+msgstr "jackpot invalide : %s"
+
+msgid "invalid ALERT_THRESHOLD: %s"
+msgstr "ALERT_THRESHOLD invalide : %s"
+
+msgid "possible gain next time: %s€"
+msgstr "gain possible au prochain tirage : %s€"
+
+msgid "alert: ALERT_TO is not set, no mail sent"
+msgstr "alerte : ALERT_TO n'est pas défini, aucun mail envoyé"
+
+msgid "Euromillions: possible gain next time: %s€"
+msgstr "Euromillions : gain possible au prochain tirage : %s€"
+
+msgid "option %s needs an amount"
+msgstr "l'option %s attend un montant"

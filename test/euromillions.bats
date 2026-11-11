@@ -6,6 +6,9 @@
 
 SCRIPT="${BATS_TEST_DIRNAME}/../euromillions.sh"
 
+# Ubuntu 22.04 ships an older bats without BATS_TEST_TMPDIR
+TEST_TMPDIR=${BATS_TEST_TMPDIR:-$(mktemp -d)}
+
 # The tests must run the script with bash 4 or later, not the system bash
 BASH_BIN=${BASH_BIN:-$(command -v bash)}
 ROOT=$(cd -- "${BATS_TEST_DIRNAME}/.." && pwd)
@@ -75,25 +78,25 @@ assert_draw () {
 }
 
 @test "repeats the same draw for the same random source" {
-	printf 'deterministic entropy for the test run' > "${BATS_TEST_TMPDIR}/source"
+	printf 'deterministic entropy for the test run' > "${TEST_TMPDIR}/source"
 
-	run env RANDOM_SOURCE="${BATS_TEST_TMPDIR}/source" "$SCRIPT"
+	run env RANDOM_SOURCE="${TEST_TMPDIR}/source" "$SCRIPT"
 	[ "$status" -eq 0 ]
 	first=$output
 
-	run env RANDOM_SOURCE="${BATS_TEST_TMPDIR}/source" "$SCRIPT"
+	run env RANDOM_SOURCE="${TEST_TMPDIR}/source" "$SCRIPT"
 	[ "$status" -eq 0 ]
 	[ "$output" = "$first" ]
 }
 
 @test "draws different values for two different random sources" {
-	printf 'first source' > "${BATS_TEST_TMPDIR}/source-one"
-	printf 'second source' > "${BATS_TEST_TMPDIR}/source-two"
+	printf 'first source' > "${TEST_TMPDIR}/source-one"
+	printf 'second source' > "${TEST_TMPDIR}/source-two"
 
-	run env RANDOM_SOURCE="${BATS_TEST_TMPDIR}/source-one" "$SCRIPT"
+	run env RANDOM_SOURCE="${TEST_TMPDIR}/source-one" "$SCRIPT"
 	first=$output
 
-	run env RANDOM_SOURCE="${BATS_TEST_TMPDIR}/source-two" "$SCRIPT"
+	run env RANDOM_SOURCE="${TEST_TMPDIR}/source-two" "$SCRIPT"
 	[ "$output" != "$first" ]
 }
 
@@ -104,7 +107,7 @@ assert_draw () {
 }
 
 @test "fails when the entropy source does not exist" {
-	run env RANDOM_SOURCE="${BATS_TEST_TMPDIR}/missing" "$SCRIPT"
+	run env RANDOM_SOURCE="${TEST_TMPDIR}/missing" "$SCRIPT"
 	[ "$status" -eq 1 ]
 	[[ "$output" == *"draw failed: Numbers"* ]]
 }
@@ -156,7 +159,7 @@ assert_draw () {
 
 @test "translates the error messages" {
 	require_translation
-	run env RANDOM_SOURCE="${BATS_TEST_TMPDIR}/missing" EUROMILLIONS_LANG=fr "$SCRIPT"
+	run env RANDOM_SOURCE="${TEST_TMPDIR}/missing" EUROMILLIONS_LANG=fr "$SCRIPT"
 	[ "$status" -eq 1 ]
 	[[ "$output" == *"tirage impossible: Numéros"* ]]
 }
@@ -263,8 +266,8 @@ assert_draw () {
 }
 
 @test "warns when the requested language has no catalogue" {
-	cp "$SCRIPT" "${BATS_TEST_TMPDIR}/euromillions.sh"
-	run "${BASH_BIN}" "${BATS_TEST_TMPDIR}/euromillions.sh" --lang fr
+	cp "$SCRIPT" "${TEST_TMPDIR}/euromillions.sh"
+	run "${BASH_BIN}" "${TEST_TMPDIR}/euromillions.sh" --lang fr
 	[ "$status" -eq 0 ]
 	[[ "$output" == *"no translation for fr, using English"* ]]
 	[[ "$output" == *"Numbers:"* ]]
@@ -279,11 +282,11 @@ assert_draw () {
 }
 
 @test "finds the data under share when packaged" {
-	mkdir -p "${BATS_TEST_TMPDIR}/bin" "${BATS_TEST_TMPDIR}/share/euromillions/po"
-	cp "$SCRIPT" "${BATS_TEST_TMPDIR}/bin/euromillions.sh"
-	cp "${ROOT}"/po/*.po "${BATS_TEST_TMPDIR}/share/euromillions/po/"
+	mkdir -p "${TEST_TMPDIR}/bin" "${TEST_TMPDIR}/share/euromillions/po"
+	cp "$SCRIPT" "${TEST_TMPDIR}/bin/euromillions.sh"
+	cp "${ROOT}"/po/*.po "${TEST_TMPDIR}/share/euromillions/po/"
 
-	run "${BASH_BIN}" "${BATS_TEST_TMPDIR}/bin/euromillions.sh" --help
+	run "${BASH_BIN}" "${TEST_TMPDIR}/bin/euromillions.sh" --help
 	[ "$status" -eq 0 ]
 	[[ "$output" == *"Languages: en fr"* ]]
 }
@@ -299,6 +302,91 @@ assert_draw () {
 	run env SHUF=/nonexistent "$SCRIPT"
 	[ "$status" -eq 1 ]
 	[[ "$output" == *"draw failed: Numbers"* ]]
+}
+
+# A mailer that records its arguments and message
+make_mailer () {
+	local mailer="$TEST_TMPDIR/mailer"
+	local out="$TEST_TMPDIR/mail.out"
+
+	{
+		printf '%s\n' '#!/bin/sh'
+		printf '%s\n' '{'
+		printf '%s\n' '	echo "ARGS: $*"'
+		printf '%s\n' '	cat'
+		printf '} > "%s"\n' "$out"
+	} > "$mailer"
+	chmod +x "$mailer"
+	rm -f "$out"
+}
+
+@test "mails the jackpot on Friday by default" {
+	make_mailer
+	run env ALERT_TODAY=5 ALERT_TO=me@example.org \
+		ALERT_MAILER="$TEST_TMPDIR/mailer" JACKPOT=150000000 "$SCRIPT"
+	[ "$status" -eq 0 ]
+	[[ "$output" == *"possible gain next time: 150000000"* ]]
+	[ -f "$TEST_TMPDIR/mail.out" ]
+	grep -q 'possible gain next time: 150000000' "$TEST_TMPDIR/mail.out"
+}
+
+@test "stays quiet on Tuesday by default" {
+	make_mailer
+	run env ALERT_TODAY=2 ALERT_TO=me@example.org \
+		ALERT_MAILER="$TEST_TMPDIR/mailer" JACKPOT=150000000 "$SCRIPT"
+	[ "$status" -eq 0 ]
+	[ ! -f "$TEST_TMPDIR/mail.out" ]
+	[[ "$output" != *"possible gain"* ]]
+}
+
+@test "mails on Tuesday when both days are configured" {
+	make_mailer
+	run env ALERT_DAYS=tue,fri ALERT_TODAY=2 ALERT_TO=me@example.org \
+		ALERT_MAILER="$TEST_TMPDIR/mailer" JACKPOT=150000000 "$SCRIPT"
+	[ "$status" -eq 0 ]
+	[ -f "$TEST_TMPDIR/mail.out" ]
+}
+
+@test "does not mail below the threshold" {
+	make_mailer
+	run env ALERT_TODAY=5 ALERT_TO=me@example.org \
+		ALERT_MAILER="$TEST_TMPDIR/mailer" JACKPOT=99999999 "$SCRIPT"
+	[ "$status" -eq 0 ]
+	[ ! -f "$TEST_TMPDIR/mail.out" ]
+}
+
+@test "mails at exactly the threshold" {
+	make_mailer
+	run env ALERT_TODAY=5 ALERT_TO=me@example.org \
+		ALERT_MAILER="$TEST_TMPDIR/mailer" JACKPOT=100000000 "$SCRIPT"
+	[ "$status" -eq 0 ]
+	[ -f "$TEST_TMPDIR/mail.out" ]
+}
+
+@test "reads the jackpot from the option" {
+	make_mailer
+	run env ALERT_TODAY=5 ALERT_TO=me@example.org \
+		ALERT_MAILER="$TEST_TMPDIR/mailer" "$SCRIPT" --jackpot=150000000
+	[ "$status" -eq 0 ]
+	[ -f "$TEST_TMPDIR/mail.out" ]
+}
+
+@test "warns when no recipient is set" {
+	run env ALERT_TODAY=5 JACKPOT=150000000 "$SCRIPT"
+	[ "$status" -eq 0 ]
+	[[ "$output" == *"ALERT_TO is not set"* ]]
+}
+
+@test "rejects an invalid alert day" {
+	run env ALERT_DAYS=mon JACKPOT=150000000 "$SCRIPT"
+	[ "$status" -eq 2 ]
+	[[ "$output" == *"ALERT_DAYS"* ]]
+}
+
+@test "rejects an invalid jackpot" {
+	run "$SCRIPT" --jackpot=abc
+	[ "$status" -eq 2 ]
+	[[ "$output" == *"jackpot"* ]]
 }
 
 @test "passes shellcheck" {

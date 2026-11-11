@@ -131,6 +131,30 @@ Stars: 4 11
 
 ---
 
+## Jackpot alerts
+
+The script can mail an alert when the next draw can pay at least a
+threshold. It has no network access, so give it the estimated jackpot,
+with `--jackpot` or `JACKPOT`:
+
+```console
+$ ALERT_TO=me@example.org JACKPOT=150000000 ./euromillions.sh
+Numbers: 4 8 13 36 46
+Stars: 3 12
+possible gain next time: 150000000€
+```
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `ALERT_THRESHOLD` | `100000000` | mail only at or above this amount |
+| `ALERT_DAYS` | `fri` | `tue`, `fri`, `tue,fri`, or `both` |
+| `ALERT_TO` | unset | recipient; without it the alert is printed but not mailed |
+| `ALERT_MAILER` | auto | `sendmail`, `msmtp`, `mail`, or a path |
+
+The message goes through `sendmail -t` when the binary is `sendmail` or
+`msmtp`, and through `mail -s` otherwise. Defaults warn on Friday only, for
+a jackpot of 100 million euro or more.
+
 ## Languages
 
 | Code | Language |

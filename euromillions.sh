@@ -38,6 +38,13 @@ SHUF=${SHUF:-shuf}
 # auto, always, or never; see use_color
 COLOR_MODE=${EUROMILLIONS_COLOR:-auto}
 
+# Jackpot alert: mail when the next draw can pay at least this much
+JACKPOT=${JACKPOT:-}
+ALERT_THRESHOLD=${ALERT_THRESHOLD:-100000000}
+ALERT_DAYS=${ALERT_DAYS:-fri}
+ALERT_TO=${ALERT_TO:-}
+ALERT_MAILER=${ALERT_MAILER:-}
+
 # gettext binary, empty when the package is absent; see _
 GETTEXT=$(command -v gettext || true)
 
@@ -187,6 +194,7 @@ usage () {
 	printf '%s\n' "$(_ 'Options:')"
 	printf '  -l, --lang CODE  %s\n' "$(_ 'output language, overriding the locale')"
 	printf '      --no-color   %s\n' "$(_ 'never use colours')"
+	printf '      --jackpot EUR  %s\n' "$(_ 'estimated jackpot, triggers the alert above the threshold')"
 	printf '  -h, --help       %s\n' "$(_ 'show this help')"
 	printf '\n%s %s\n' "$(_ 'Languages:')" "$(languages)"
 }
@@ -227,6 +235,93 @@ draw () {
 		"${value_color}" "${draws[*]}" "${RESET}"
 }
 
+# ISO weekdays on which the alert may fire: 2 Tuesday, 5 Friday
+alert_days () {
+	case "$ALERT_DAYS" in
+		tue) printf '2' ;;
+		fri) printf '5' ;;
+		tue,fri|fri,tue|both|all) printf '2 5' ;;
+		*)
+			printf '%s\n' "$(format_message "$(_ 'invalid ALERT_DAYS: %s')" "$ALERT_DAYS")" >&2
+			exit 2
+			;;
+	esac
+}
+
+# The alert fires only on a configured draw day
+is_alert_day () {
+	local today=${ALERT_TODAY:-$(date +%u)}
+	local day
+
+	for day in $(alert_days); do
+		[ "$today" = "$day" ] && return 0
+	done
+
+	return 1
+}
+
+send_alert () {
+	local subject=$1
+	local body=$2
+	local mailer=$ALERT_MAILER
+
+	if [ -z "$mailer" ]; then
+		if command -v sendmail >/dev/null 2>&1; then
+			mailer=sendmail
+		elif command -v mail >/dev/null 2>&1; then
+			mailer=mail
+		fi
+	fi
+
+	if [ -z "$mailer" ]; then
+		printf '%s\n' "$(_ 'alert: no mailer found, set ALERT_MAILER')" >&2
+		return 0
+	fi
+
+	case ${mailer##*/} in
+		sendmail|msmtp)
+			printf 'To: %s\nSubject: %s\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\n\n%s\n' \
+				"$ALERT_TO" "$subject" "$body" | "$mailer" -t
+			;;
+		*)
+			printf '%s\n' "$body" | "$mailer" -s "$subject" "$ALERT_TO"
+			;;
+	esac
+}
+
+# Mail the next jackpot when it reaches the threshold, on an alert day
+maybe_alert () {
+	case "$JACKPOT" in
+		'') return 0 ;;
+		*[!0-9]*)
+			printf '%s\n' "$(format_message "$(_ 'invalid jackpot: %s')" "$JACKPOT")" >&2
+			exit 2
+			;;
+	esac
+
+	alert_days >/dev/null
+
+	case "$ALERT_THRESHOLD" in
+		*[!0-9]*)
+			printf '%s\n' "$(format_message "$(_ 'invalid ALERT_THRESHOLD: %s')" "$ALERT_THRESHOLD")" >&2
+			exit 2
+			;;
+	esac
+
+	(( JACKPOT >= ALERT_THRESHOLD )) || return 0
+	is_alert_day || return 0
+
+	printf '%s\n' "$(format_message "$(_ 'possible gain next time: %s€')" "$JACKPOT")"
+
+	if [ -z "$ALERT_TO" ]; then
+		printf '%s\n' "$(_ 'alert: ALERT_TO is not set, no mail sent')" >&2
+		return 0
+	fi
+
+	send_alert "$(format_message "$(_ 'Euromillions: possible gain next time: %s€')" "$JACKPOT")" \
+		"$(format_message "$(_ 'possible gain next time: %s€')" "$JACKPOT")"
+}
+
 language=$(detect_language)
 show_help=0
 error_kind=
@@ -246,6 +341,19 @@ while (( $# )); do
 			;;
 		--lang=*)
 			language=${1#*=}
+			shift
+			;;
+		--jackpot)
+			if (( $# < 2 )); then
+				error_kind=needs_jackpot
+				error_arg=$1
+				break
+			fi
+			JACKPOT=$2
+			shift 2
+			;;
+		--jackpot=*)
+			JACKPOT=${1#*=}
 			shift
 			;;
 		--no-color)
@@ -275,6 +383,13 @@ if [ "$error_kind" = needs_code ]; then
 	exit 2
 fi
 
+if [ "$error_kind" = needs_jackpot ]; then
+	printf '%s%s%s\n' "${ERROR_COLOR}" \
+		"$(format_message "$(_ 'option %s needs an amount')" "${error_arg}")" "${ERROR_RESET}" >&2
+	usage >&2
+	exit 2
+fi
+
 if [ "$error_kind" = unknown ]; then
 	printf '%s%s%s\n' "${ERROR_COLOR}" \
 		"$(format_message "$(_ 'unknown argument: %s')" "${error_arg}")" "${ERROR_RESET}" >&2
@@ -290,3 +405,6 @@ fi
 # Start functions
 draw "$(_ 'Numbers')" "${COUNTNUMBERS}" "${NUMBERSDOWN}" "${NUMBERSUP}" "${NUMBERS_COLOR}"
 draw "$(_ 'Stars')" "${COUNTSTARS}" "${STARSDOWN}" "${STARSUP}" "${STARS_COLOR}"
+
+
+maybe_alert

@@ -145,6 +145,7 @@ Stars: 4 11
 | `ALERT_MAILER` | auto | `sendmail`, `msmtp`, `mail`, or a path; auto-detected |
 | `JACKPOT_URL` | FDJ endpoint | where to read the estimated jackpot |
 | `CURL` | `curl` | HTTP client used to read the jackpot |
+| `PLAY_URL` | FDJ site | link shown in the alert mail |
 
 These variables apply to `--cron` and `--threshold`. A plain run ignores
 them and never touches the network.
@@ -172,10 +173,19 @@ of the next draw. It mails an alert when the jackpot reaches the
 threshold, and does nothing otherwise:
 
 ```console
-$ ALERT_TO=me@example.org ./euromillions.sh --cron
 $ ALERT_THRESHOLD=10000000 ALERT_TO=me@example.org ./euromillions.sh --cron
-$ mail -s 'Euromillions: next draw 17 M€' me@example.org
-next draw: 17 M€
+```
+
+The mail is plain text, in the selected language:
+
+```text
+--------------------------------------------------
+ EUROMILLIONS - NEXT DRAW
+--------------------------------------------------
+ Jackpot: 17 M€
+ Play: https://www.fdj.fr/jeux-de-tirage/euromillions
+--------------------------------------------------
+ Fill a grid before the draw. Good luck!
 ```
 
 Amounts use SI prefixes and round to the unit: `17 M€`, `100 M€`,

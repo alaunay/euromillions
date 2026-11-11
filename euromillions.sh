@@ -42,7 +42,6 @@ COLOR_MODE=${EUROMILLIONS_COLOR:-auto}
 JACKPOT_URL=${JACKPOT_URL:-https://www.sto.api.fdj.fr/anonymous/service-draw-info/v3/draws?game_name=euromillions&current=true}
 CURL=${CURL:-curl}
 ALERT_THRESHOLD=${ALERT_THRESHOLD:-100000000}
-ALERT_DAYS=${ALERT_DAYS:-fri}
 ALERT_TO=${ALERT_TO:-}
 ALERT_MAILER=${ALERT_MAILER:-}
 
@@ -188,12 +187,14 @@ format_message () {
 }
 
 usage () {
-	printf '%s %s [--lang CODE] [--no-color] [-h | --help]\n\n' "$(_ 'Usage:')" "${0##*/}"
+	printf '%s %s [--cron | --threshold] [--lang CODE] [--no-color] [-h | --help]\n\n' "$(_ 'Usage:')" "${0##*/}"
 	printf '%s\n\n' "$(format_message "$(_ 'Draw %s numbers from %s to %s and %s stars from %s to %s.')" \
 		"${COUNTNUMBERS}" "${NUMBERSDOWN}" "${NUMBERSUP}" \
 		"${COUNTSTARS}" "${STARSDOWN}" "${STARSUP}")"
 	printf '%s\n' "$(_ 'Options:')"
 	printf '  -l, --lang CODE  %s\n' "$(_ 'output language, overriding the locale')"
+	printf '      --cron       %s\n' "$(_ 'mail the next jackpot when it reaches the threshold')"
+	printf '      --threshold  %s\n' "$(_ 'print the alert threshold and exit')"
 	printf '      --no-color   %s\n' "$(_ 'never use colours')"
 	printf '  -h, --help       %s\n' "$(_ 'show this help')"
 	printf '\n%s %s\n' "$(_ 'Languages:')" "$(languages)"
@@ -235,29 +236,38 @@ draw () {
 		"${value_color}" "${draws[*]}" "${RESET}"
 }
 
-# ISO weekdays on which the alert may fire: 2 Tuesday, 5 Friday
-alert_days () {
-	case "$ALERT_DAYS" in
-		tue) printf '2' ;;
-		fri) printf '5' ;;
-		tue,fri|fri,tue|both|all) printf '2 5' ;;
-		*)
-			printf '%s\n' "$(format_message "$(_ 'invalid ALERT_DAYS: %s')" "$ALERT_DAYS")" >&2
+# Format an amount of euro with the nearest SI prefix, rounded
+si_amount () {
+	local amount=$1
+	local divisor=1
+	local prefix=
+	local value
+
+	while :; do
+		value=$(( (amount + divisor / 2) / divisor ))
+		(( value < 1000 )) && break
+
+		case "$prefix" in
+			'') prefix=k ;;
+			k) prefix=M ;;
+			M) prefix=G ;;
+			G) prefix=T ;;
+			*) break ;;
+		esac
+		divisor=$(( divisor * 1000 ))
+	done
+
+	printf '%s %s€' "${value}" "${prefix}"
+}
+
+# Validate the alert threshold
+check_threshold () {
+	case "$ALERT_THRESHOLD" in
+		''|*[!0-9]*)
+			printf '%s\n' "$(format_message "$(_ 'invalid ALERT_THRESHOLD: %s')" "$ALERT_THRESHOLD")" >&2
 			exit 2
 			;;
 	esac
-}
-
-# The alert fires only on a configured draw day
-is_alert_day () {
-	local today=${ALERT_TODAY:-$(date +%u)}
-	local day
-
-	for day in $(alert_days); do
-		[ "$today" = "$day" ] && return 0
-	done
-
-	return 1
 }
 
 send_alert () {
@@ -268,6 +278,8 @@ send_alert () {
 	if [ -z "$mailer" ]; then
 		if command -v sendmail >/dev/null 2>&1; then
 			mailer=sendmail
+		elif command -v msmtp >/dev/null 2>&1; then
+			mailer=msmtp
 		elif command -v mail >/dev/null 2>&1; then
 			mailer=mail
 		fi
@@ -275,16 +287,22 @@ send_alert () {
 
 	if [ -z "$mailer" ]; then
 		printf '%s\n' "$(_ 'alert: no mailer found, set ALERT_MAILER')" >&2
-		return 0
+		return 1
 	fi
 
 	case ${mailer##*/} in
 		sendmail|msmtp)
-			printf 'To: %s\nSubject: %s\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\n\n%s\n' \
-				"$ALERT_TO" "$subject" "$body" | "$mailer" -t
+			if ! printf 'To: %s\nSubject: %s\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\n\n%s\n' \
+				"$ALERT_TO" "$subject" "$body" | "$mailer" -t; then
+				printf '%s\n' "$(_ 'alert: the mailer failed')" >&2
+				return 1
+			fi
 			;;
 		*)
-			printf '%s\n' "$body" | "$mailer" -s "$subject" "$ALERT_TO"
+			if ! printf '%s\n' "$body" | "$mailer" -s "$subject" "$ALERT_TO"; then
+				printf '%s\n' "$(_ 'alert: the mailer failed')" >&2
+				return 1
+			fi
 			;;
 	esac
 }
@@ -323,41 +341,33 @@ fetch_jackpot () {
 	printf '%s' "$value"
 }
 
-# Mail the next jackpot when it reaches the threshold, on an alert day
-maybe_alert () {
-	local jackpot
+# Mail the next jackpot when it reaches the threshold, and stay silent otherwise
+run_cron () {
+	local jackpot amount
 
-	alert_days >/dev/null
+	check_threshold
 
 	if ! jackpot=$(fetch_jackpot); then
-		return 0
+		return 1
 	fi
 
-	JACKPOT=$jackpot
+	(( jackpot >= ALERT_THRESHOLD )) || return 0
 
-	case "$ALERT_THRESHOLD" in
-		*[!0-9]*)
-			printf '%s\n' "$(format_message "$(_ 'invalid ALERT_THRESHOLD: %s')" "$ALERT_THRESHOLD")" >&2
-			exit 2
-			;;
-	esac
-
-	(( JACKPOT >= ALERT_THRESHOLD )) || return 0
-	is_alert_day || return 0
-
-	printf '%s\n' "$(format_message "$(_ 'possible gain next time: %s€')" "$JACKPOT")"
+	amount=$(si_amount "$jackpot")
 
 	if [ -z "$ALERT_TO" ]; then
 		printf '%s\n' "$(_ 'alert: ALERT_TO is not set, no mail sent')" >&2
-		return 0
+		return 1
 	fi
 
-	send_alert "$(format_message "$(_ 'Euromillions: possible gain next time: %s€')" "$JACKPOT")" \
-		"$(format_message "$(_ 'possible gain next time: %s€')" "$JACKPOT")"
+	send_alert "$(format_message "$(_ 'Euromillions: next draw %s')" "$amount")" \
+		"$(format_message "$(_ 'next draw: %s')" "$amount")"
 }
 
 language=$(detect_language)
 show_help=0
+cron=0
+show_threshold=0
 error_kind=
 error_arg=
 
@@ -379,6 +389,14 @@ while (( $# )); do
 			;;
 		--no-color)
 			COLOR_MODE=never
+			shift
+			;;
+		--cron)
+			cron=1
+			shift
+			;;
+		--threshold)
+			show_threshold=1
 			shift
 			;;
 		-h|--help)
@@ -416,9 +434,18 @@ if (( show_help )); then
 	exit 0
 fi
 
+if (( show_threshold )); then
+	check_threshold
+	si_amount "$ALERT_THRESHOLD"
+	printf '\n'
+	exit 0
+fi
+
+if (( cron )); then
+	run_cron
+	exit $?
+fi
+
 # Start functions
 draw "$(_ 'Numbers')" "${COUNTNUMBERS}" "${NUMBERSDOWN}" "${NUMBERSUP}" "${NUMBERS_COLOR}"
 draw "$(_ 'Stars')" "${COUNTSTARS}" "${STARSDOWN}" "${STARSUP}" "${STARS_COLOR}"
-
-
-maybe_alert

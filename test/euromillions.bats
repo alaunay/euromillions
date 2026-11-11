@@ -326,83 +326,105 @@ make_mailer () {
 	rm -f "$out"
 }
 
-@test "mails the jackpot on Friday by default" {
+@test "draws without any network access" {
+	run env CURL=/nonexistent JACKPOT_URL="file://$TEST_TMPDIR/missing.json" "$SCRIPT"
+	[ "$status" -eq 0 ]
+	[[ "$output" == *"Numbers:"* ]]
+	[[ "$output" == *"Stars:"* ]]
+	[[ "$output" != *"€"* ]]
+}
+
+@test "cron mails the next jackpot above the threshold" {
 	make_mailer
 	write_jackpot 15000000000
-	run env ALERT_TODAY=5 ALERT_TO=me@example.org ALERT_MAILER="$TEST_TMPDIR/mailer" \
-		JACKPOT_URL="file://$TEST_TMPDIR/jackpot.json" "$SCRIPT"
+	run env ALERT_TO=me@example.org ALERT_MAILER="$TEST_TMPDIR/mailer" \
+		JACKPOT_URL="file://$TEST_TMPDIR/jackpot.json" "$SCRIPT" --cron
 	[ "$status" -eq 0 ]
-	[[ "$output" == *"possible gain next time: 150000000"* ]]
+	[ -z "$output" ]
 	[ -f "$TEST_TMPDIR/mail.out" ]
-	grep -q 'possible gain next time: 150000000' "$TEST_TMPDIR/mail.out"
+	grep -q 'next draw: 150 M€' "$TEST_TMPDIR/mail.out"
 }
 
-@test "stays quiet on Tuesday by default" {
-	make_mailer
-	write_jackpot 15000000000
-	run env ALERT_TODAY=2 ALERT_TO=me@example.org ALERT_MAILER="$TEST_TMPDIR/mailer" \
-		JACKPOT_URL="file://$TEST_TMPDIR/jackpot.json" "$SCRIPT"
-	[ "$status" -eq 0 ]
-	[ ! -f "$TEST_TMPDIR/mail.out" ]
-	[[ "$output" != *"possible gain"* ]]
-}
-
-@test "mails on Tuesday when both days are configured" {
-	make_mailer
-	write_jackpot 15000000000
-	run env ALERT_DAYS=tue,fri ALERT_TODAY=2 ALERT_TO=me@example.org \
-		ALERT_MAILER="$TEST_TMPDIR/mailer" \
-		JACKPOT_URL="file://$TEST_TMPDIR/jackpot.json" "$SCRIPT"
-	[ "$status" -eq 0 ]
-	[ -f "$TEST_TMPDIR/mail.out" ]
-}
-
-@test "does not mail below the threshold" {
+@test "cron stays quiet below the threshold" {
 	make_mailer
 	write_jackpot 9999999900
-	run env ALERT_TODAY=5 ALERT_TO=me@example.org ALERT_MAILER="$TEST_TMPDIR/mailer" \
-		JACKPOT_URL="file://$TEST_TMPDIR/jackpot.json" "$SCRIPT"
+	run env ALERT_TO=me@example.org ALERT_MAILER="$TEST_TMPDIR/mailer" \
+		JACKPOT_URL="file://$TEST_TMPDIR/jackpot.json" "$SCRIPT" --cron
 	[ "$status" -eq 0 ]
+	[ -z "$output" ]
 	[ ! -f "$TEST_TMPDIR/mail.out" ]
 }
 
-@test "mails at exactly the threshold" {
+@test "cron mails at exactly the threshold" {
 	make_mailer
 	write_jackpot 10000000000
-	run env ALERT_TODAY=5 ALERT_TO=me@example.org ALERT_MAILER="$TEST_TMPDIR/mailer" \
-		JACKPOT_URL="file://$TEST_TMPDIR/jackpot.json" "$SCRIPT"
+	run env ALERT_TO=me@example.org ALERT_MAILER="$TEST_TMPDIR/mailer" \
+		JACKPOT_URL="file://$TEST_TMPDIR/jackpot.json" "$SCRIPT" --cron
 	[ "$status" -eq 0 ]
 	[ -f "$TEST_TMPDIR/mail.out" ]
+	grep -q 'next draw: 100 M€' "$TEST_TMPDIR/mail.out"
 }
 
-@test "converts the jackpot value and scale" {
+@test "cron converts the jackpot value and scale" {
 	make_mailer
-	printf '{"estimated_jackpot":[{"value":150000000,"currency":"EUR","scale":2}]}\n' \
+	printf '{"estimated_jackpot":[{"value":1700000000,"currency":"EUR","scale":2}]}\n' \
 		> "$TEST_TMPDIR/jackpot.json"
-	run env ALERT_TODAY=5 ALERT_THRESHOLD=1000000 ALERT_TO=me@example.org \
+	run env ALERT_THRESHOLD=1000000 ALERT_TO=me@example.org \
 		ALERT_MAILER="$TEST_TMPDIR/mailer" \
-		JACKPOT_URL="file://$TEST_TMPDIR/jackpot.json" "$SCRIPT"
+		JACKPOT_URL="file://$TEST_TMPDIR/jackpot.json" "$SCRIPT" --cron
 	[ "$status" -eq 0 ]
-	grep -q 'possible gain next time: 1500000' "$TEST_TMPDIR/mail.out"
+	grep -q 'next draw: 17 M€' "$TEST_TMPDIR/mail.out"
 }
 
-@test "warns when no recipient is set" {
+@test "cron exits 1 when the jackpot cannot be read" {
+	run env JACKPOT_URL="file://$TEST_TMPDIR/missing.json" "$SCRIPT" --cron
+	[ "$status" -eq 1 ]
+	[[ "$output" == *"cannot read the jackpot"* ]]
+}
+
+@test "cron exits 1 when no recipient is set" {
 	write_jackpot 15000000000
-	run env ALERT_TODAY=5 JACKPOT_URL="file://$TEST_TMPDIR/jackpot.json" "$SCRIPT"
-	[ "$status" -eq 0 ]
+	run env JACKPOT_URL="file://$TEST_TMPDIR/jackpot.json" "$SCRIPT" --cron
+	[ "$status" -eq 1 ]
 	[[ "$output" == *"ALERT_TO is not set"* ]]
 }
 
-@test "rejects an invalid alert day" {
-	run env ALERT_DAYS=mon "$SCRIPT"
-	[ "$status" -eq 2 ]
-	[[ "$output" == *"ALERT_DAYS"* ]]
+@test "cron exits 1 when the mailer fails" {
+	write_jackpot 15000000000
+	run env ALERT_TO=me@example.org ALERT_MAILER=/nonexistent \
+		JACKPOT_URL="file://$TEST_TMPDIR/jackpot.json" "$SCRIPT" --cron
+	[ "$status" -eq 1 ]
+	[[ "$output" == *"the mailer failed"* ]]
 }
 
-@test "warns when the jackpot cannot be read" {
-	run env JACKPOT_URL="file://$TEST_TMPDIR/missing.json" "$SCRIPT"
+@test "prints the default threshold on request" {
+	run "$SCRIPT" --threshold
 	[ "$status" -eq 0 ]
-	[[ "$output" == *"cannot read the jackpot"* ]]
+	[ "$output" = "100 M€" ]
+}
+
+@test "prints a custom threshold with an SI prefix" {
+	run env ALERT_THRESHOLD=150000000 "$SCRIPT" --threshold
+	[ "$status" -eq 0 ]
+	[ "$output" = "150 M€" ]
+}
+
+@test "rounds the threshold to the nearest unit" {
+	run env ALERT_THRESHOLD=17500000 "$SCRIPT" --threshold
+	[ "$status" -eq 0 ]
+	[ "$output" = "18 M€" ]
+}
+
+@test "rejects an invalid threshold" {
+	run env ALERT_THRESHOLD=abc "$SCRIPT" --threshold
+	[ "$status" -eq 2 ]
+	[[ "$output" == *"ALERT_THRESHOLD"* ]]
+}
+
+@test "rejects an invalid threshold in cron" {
+	run env ALERT_THRESHOLD=abc "$SCRIPT" --cron
+	[ "$status" -eq 2 ]
+	[[ "$output" == *"ALERT_THRESHOLD"* ]]
 }
 
 @test "passes shellcheck" {

@@ -85,11 +85,13 @@ $ sudo dnf install euromillions
 ## Usage
 
 ```console
-$ ./euromillions.sh [-l CODE | --lang CODE] [--no-color] [-h | --help]
+$ ./euromillions.sh [--cron | --threshold] [-l CODE | --lang CODE] [--no-color] [-h | --help]
 ```
 
 | Option | Effect |
 | --- | --- |
+| `--cron` | Mail the next jackpot when it reaches the threshold, draw nothing |
+| `--threshold` | Print the alert threshold and exit |
 | `-l, --lang CODE` | Set the output language, overriding the locale |
 | `--no-color` | Never use colours |
 | `-h, --help` | Show the options and the available languages, in the selected language |
@@ -133,14 +135,32 @@ Stars: 4 11
 
 ## Jackpot alerts
 
-The script reads the estimated jackpot of the next draw from the FDJ draw
-information endpoint, then mails an alert when it reaches the threshold:
+Without `--cron`, the script only draws a grid: it opens no network
+connection and prints no gain.
+
+`--cron` asks the FDJ draw information endpoint for the estimated jackpot
+of the next draw. It mails an alert when the jackpot reaches the
+threshold, and does nothing otherwise:
 
 ```console
-$ ALERT_TO=me@example.org ./euromillions.sh
-Numbers: 4 8 13 36 46
-Stars: 3 12
-possible gain next time: 17000000€
+$ ALERT_TO=me@example.org ./euromillions.sh --cron
+$ ALERT_THRESHOLD=10000000 ALERT_TO=me@example.org ./euromillions.sh --cron
+$ mail -s 'Euromillions: next draw 17 M€' me@example.org
+next draw: 17 M€
+```
+
+Amounts use SI prefixes and round to the unit: `17 M€`, `100 M€`,
+`1 G€`. `--threshold` prints the configured value:
+
+```console
+$ ./euromillions.sh --threshold
+100 M€
+```
+
+A cron entry every Wednesday at noon:
+
+```cron
+0 12 * * 3 ALERT_TO=me@example.org /usr/bin/euromillions --cron
 ```
 
 It needs `curl` and network access. The endpoint is FDJ's public draw
@@ -149,15 +169,15 @@ information service, not an official API; `JACKPOT_URL` overrides it.
 | Variable | Default | Meaning |
 | --- | --- | --- |
 | `ALERT_THRESHOLD` | `100000000` | mail only at or above this amount |
-| `ALERT_DAYS` | `fri` | `tue`, `fri`, `tue,fri`, or `both` |
-| `ALERT_TO` | unset | recipient; without it the alert is printed but not mailed |
+| `ALERT_TO` | unset | recipient; cron exits 1 without it |
 | `ALERT_MAILER` | auto | `sendmail`, `msmtp`, `mail`, or a path |
 | `JACKPOT_URL` | FDJ endpoint | where to read the estimated jackpot |
 
 The message goes through `sendmail -t` when the binary is `sendmail` or
-`msmtp`, and through `mail -s` otherwise. Defaults warn on Friday only, for
-a jackpot of 100 million euro or more. When the endpoint is unreachable,
-the script says so on stderr and draws as usual.
+`msmtp`, and through `mail -s` otherwise. Below the threshold, `--cron`
+exits 0 and prints nothing. An unreachable endpoint, an invalid response,
+a missing recipient, or a failed mailer exits 1 with a message on stderr,
+so cron reports the failure.
 
 ## Languages
 

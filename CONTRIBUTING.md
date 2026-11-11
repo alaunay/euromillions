@@ -144,8 +144,11 @@ a finding.
 `master` only takes pull requests, and every pull request must:
 
 - be GPG-signed, or GitHub rejects the push;
-- carry `Co-authored-by` and `Signed-off-by` trailers, which the DCO check
-  enforces on the pull request;
+- carry a `Signed-off-by` trailer, which the DCO check enforces on the
+  pull request;
+- carry one `Co-authored-by` trailer per additional author when someone
+  else helped write the patch, an AI model included; a change written
+  alone needs none;
 - pass the `bats` check, which runs shellcheck, generates the French
   locale, builds the catalogues, and runs the suite.
 

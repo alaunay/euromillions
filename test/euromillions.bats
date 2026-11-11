@@ -306,66 +306,69 @@ assert_draw () {
 
 # A mailer that records its arguments and message
 make_mailer () {
-	cat > "$BATS_TEST_TMPDIR/mailer" <<'EOF'
-#!/bin/sh
-{
-	echo "ARGS: $*"
-	cat
-} > "$BATS_TEST_TMPDIR/mail.out"
-EOF
-	chmod +x "$BATS_TEST_TMPDIR/mailer"
-	rm -f "$BATS_TEST_TMPDIR/mail.out"
+	local mailer="$TEST_TMPDIR/mailer"
+	local out="$TEST_TMPDIR/mail.out"
+
+	{
+		printf '%s\n' '#!/bin/sh'
+		printf '%s\n' '{'
+		printf '%s\n' '	echo "ARGS: $*"'
+		printf '%s\n' '	cat'
+		printf '} > "%s"\n' "$out"
+	} > "$mailer"
+	chmod +x "$mailer"
+	rm -f "$out"
 }
 
 @test "mails the jackpot on Friday by default" {
 	make_mailer
 	run env ALERT_TODAY=5 ALERT_TO=me@example.org \
-		ALERT_MAILER="$BATS_TEST_TMPDIR/mailer" JACKPOT=150000000 "$SCRIPT"
+		ALERT_MAILER="$TEST_TMPDIR/mailer" JACKPOT=150000000 "$SCRIPT"
 	[ "$status" -eq 0 ]
 	[[ "$output" == *"possible gain next time: 150000000"* ]]
-	[ -f "$BATS_TEST_TMPDIR/mail.out" ]
-	grep -q 'possible gain next time: 150000000' "$BATS_TEST_TMPDIR/mail.out"
+	[ -f "$TEST_TMPDIR/mail.out" ]
+	grep -q 'possible gain next time: 150000000' "$TEST_TMPDIR/mail.out"
 }
 
 @test "stays quiet on Tuesday by default" {
 	make_mailer
 	run env ALERT_TODAY=2 ALERT_TO=me@example.org \
-		ALERT_MAILER="$BATS_TEST_TMPDIR/mailer" JACKPOT=150000000 "$SCRIPT"
+		ALERT_MAILER="$TEST_TMPDIR/mailer" JACKPOT=150000000 "$SCRIPT"
 	[ "$status" -eq 0 ]
-	[ ! -f "$BATS_TEST_TMPDIR/mail.out" ]
+	[ ! -f "$TEST_TMPDIR/mail.out" ]
 	[[ "$output" != *"possible gain"* ]]
 }
 
 @test "mails on Tuesday when both days are configured" {
 	make_mailer
 	run env ALERT_DAYS=tue,fri ALERT_TODAY=2 ALERT_TO=me@example.org \
-		ALERT_MAILER="$BATS_TEST_TMPDIR/mailer" JACKPOT=150000000 "$SCRIPT"
+		ALERT_MAILER="$TEST_TMPDIR/mailer" JACKPOT=150000000 "$SCRIPT"
 	[ "$status" -eq 0 ]
-	[ -f "$BATS_TEST_TMPDIR/mail.out" ]
+	[ -f "$TEST_TMPDIR/mail.out" ]
 }
 
 @test "does not mail below the threshold" {
 	make_mailer
 	run env ALERT_TODAY=5 ALERT_TO=me@example.org \
-		ALERT_MAILER="$BATS_TEST_TMPDIR/mailer" JACKPOT=99999999 "$SCRIPT"
+		ALERT_MAILER="$TEST_TMPDIR/mailer" JACKPOT=99999999 "$SCRIPT"
 	[ "$status" -eq 0 ]
-	[ ! -f "$BATS_TEST_TMPDIR/mail.out" ]
+	[ ! -f "$TEST_TMPDIR/mail.out" ]
 }
 
 @test "mails at exactly the threshold" {
 	make_mailer
 	run env ALERT_TODAY=5 ALERT_TO=me@example.org \
-		ALERT_MAILER="$BATS_TEST_TMPDIR/mailer" JACKPOT=100000000 "$SCRIPT"
+		ALERT_MAILER="$TEST_TMPDIR/mailer" JACKPOT=100000000 "$SCRIPT"
 	[ "$status" -eq 0 ]
-	[ -f "$BATS_TEST_TMPDIR/mail.out" ]
+	[ -f "$TEST_TMPDIR/mail.out" ]
 }
 
 @test "reads the jackpot from the option" {
 	make_mailer
 	run env ALERT_TODAY=5 ALERT_TO=me@example.org \
-		ALERT_MAILER="$BATS_TEST_TMPDIR/mailer" "$SCRIPT" --jackpot=150000000
+		ALERT_MAILER="$TEST_TMPDIR/mailer" "$SCRIPT" --jackpot=150000000
 	[ "$status" -eq 0 ]
-	[ -f "$BATS_TEST_TMPDIR/mail.out" ]
+	[ -f "$TEST_TMPDIR/mail.out" ]
 }
 
 @test "warns when no recipient is set" {

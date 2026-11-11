@@ -304,6 +304,12 @@ assert_draw () {
 	[[ "$output" == *"draw failed: Numbers"* ]]
 }
 
+# A jackpot response in the FDJ shape, value in cents
+write_jackpot () {
+	printf '{"estimated_jackpot":[{"value":%s,"currency":"EUR","scale":2}]}\n' "$1" \
+		> "$TEST_TMPDIR/jackpot.json"
+}
+
 # A mailer that records its arguments and message
 make_mailer () {
 	local mailer="$TEST_TMPDIR/mailer"
@@ -322,8 +328,9 @@ make_mailer () {
 
 @test "mails the jackpot on Friday by default" {
 	make_mailer
-	run env ALERT_TODAY=5 ALERT_TO=me@example.org \
-		ALERT_MAILER="$TEST_TMPDIR/mailer" JACKPOT=150000000 "$SCRIPT"
+	write_jackpot 15000000000
+	run env ALERT_TODAY=5 ALERT_TO=me@example.org ALERT_MAILER="$TEST_TMPDIR/mailer" \
+		JACKPOT_URL="file://$TEST_TMPDIR/jackpot.json" "$SCRIPT"
 	[ "$status" -eq 0 ]
 	[[ "$output" == *"possible gain next time: 150000000"* ]]
 	[ -f "$TEST_TMPDIR/mail.out" ]
@@ -332,8 +339,9 @@ make_mailer () {
 
 @test "stays quiet on Tuesday by default" {
 	make_mailer
-	run env ALERT_TODAY=2 ALERT_TO=me@example.org \
-		ALERT_MAILER="$TEST_TMPDIR/mailer" JACKPOT=150000000 "$SCRIPT"
+	write_jackpot 15000000000
+	run env ALERT_TODAY=2 ALERT_TO=me@example.org ALERT_MAILER="$TEST_TMPDIR/mailer" \
+		JACKPOT_URL="file://$TEST_TMPDIR/jackpot.json" "$SCRIPT"
 	[ "$status" -eq 0 ]
 	[ ! -f "$TEST_TMPDIR/mail.out" ]
 	[[ "$output" != *"possible gain"* ]]
@@ -341,52 +349,60 @@ make_mailer () {
 
 @test "mails on Tuesday when both days are configured" {
 	make_mailer
+	write_jackpot 15000000000
 	run env ALERT_DAYS=tue,fri ALERT_TODAY=2 ALERT_TO=me@example.org \
-		ALERT_MAILER="$TEST_TMPDIR/mailer" JACKPOT=150000000 "$SCRIPT"
+		ALERT_MAILER="$TEST_TMPDIR/mailer" \
+		JACKPOT_URL="file://$TEST_TMPDIR/jackpot.json" "$SCRIPT"
 	[ "$status" -eq 0 ]
 	[ -f "$TEST_TMPDIR/mail.out" ]
 }
 
 @test "does not mail below the threshold" {
 	make_mailer
-	run env ALERT_TODAY=5 ALERT_TO=me@example.org \
-		ALERT_MAILER="$TEST_TMPDIR/mailer" JACKPOT=99999999 "$SCRIPT"
+	write_jackpot 9999999900
+	run env ALERT_TODAY=5 ALERT_TO=me@example.org ALERT_MAILER="$TEST_TMPDIR/mailer" \
+		JACKPOT_URL="file://$TEST_TMPDIR/jackpot.json" "$SCRIPT"
 	[ "$status" -eq 0 ]
 	[ ! -f "$TEST_TMPDIR/mail.out" ]
 }
 
 @test "mails at exactly the threshold" {
 	make_mailer
-	run env ALERT_TODAY=5 ALERT_TO=me@example.org \
-		ALERT_MAILER="$TEST_TMPDIR/mailer" JACKPOT=100000000 "$SCRIPT"
+	write_jackpot 10000000000
+	run env ALERT_TODAY=5 ALERT_TO=me@example.org ALERT_MAILER="$TEST_TMPDIR/mailer" \
+		JACKPOT_URL="file://$TEST_TMPDIR/jackpot.json" "$SCRIPT"
 	[ "$status" -eq 0 ]
 	[ -f "$TEST_TMPDIR/mail.out" ]
 }
 
-@test "reads the jackpot from the option" {
+@test "converts the jackpot value and scale" {
 	make_mailer
-	run env ALERT_TODAY=5 ALERT_TO=me@example.org \
-		ALERT_MAILER="$TEST_TMPDIR/mailer" "$SCRIPT" --jackpot=150000000
+	printf '{"estimated_jackpot":[{"value":150000000,"currency":"EUR","scale":2}]}\n' \
+		> "$TEST_TMPDIR/jackpot.json"
+	run env ALERT_TODAY=5 ALERT_THRESHOLD=1000000 ALERT_TO=me@example.org \
+		ALERT_MAILER="$TEST_TMPDIR/mailer" \
+		JACKPOT_URL="file://$TEST_TMPDIR/jackpot.json" "$SCRIPT"
 	[ "$status" -eq 0 ]
-	[ -f "$TEST_TMPDIR/mail.out" ]
+	grep -q 'possible gain next time: 1500000' "$TEST_TMPDIR/mail.out"
 }
 
 @test "warns when no recipient is set" {
-	run env ALERT_TODAY=5 JACKPOT=150000000 "$SCRIPT"
+	write_jackpot 15000000000
+	run env ALERT_TODAY=5 JACKPOT_URL="file://$TEST_TMPDIR/jackpot.json" "$SCRIPT"
 	[ "$status" -eq 0 ]
 	[[ "$output" == *"ALERT_TO is not set"* ]]
 }
 
 @test "rejects an invalid alert day" {
-	run env ALERT_DAYS=mon JACKPOT=150000000 "$SCRIPT"
+	run env ALERT_DAYS=mon "$SCRIPT"
 	[ "$status" -eq 2 ]
 	[[ "$output" == *"ALERT_DAYS"* ]]
 }
 
-@test "rejects an invalid jackpot" {
-	run "$SCRIPT" --jackpot=abc
-	[ "$status" -eq 2 ]
-	[[ "$output" == *"jackpot"* ]]
+@test "warns when the jackpot cannot be read" {
+	run env JACKPOT_URL="file://$TEST_TMPDIR/missing.json" "$SCRIPT"
+	[ "$status" -eq 0 ]
+	[[ "$output" == *"cannot read the jackpot"* ]]
 }
 
 @test "passes shellcheck" {

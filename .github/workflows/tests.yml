@@ -12,6 +12,8 @@ jobs:
   bats:
     name: bats / ${{ matrix.name }}
     runs-on: ubuntu-latest
+    env:
+      REQUIRE_TRANSLATION: "1"
     strategy:
       fail-fast: false
       matrix:
@@ -67,6 +69,8 @@ jobs:
   package-deb:
     name: package-deb / ${{ matrix.name }}
     runs-on: ubuntu-latest
+    env:
+      REQUIRE_TRANSLATION: "1"
     strategy:
       fail-fast: false
       matrix:
@@ -128,6 +132,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Build the RPM
+        env:
+          REQUIRE_TRANSLATION: "1"
         run: |
           mkdir -p dist rpmbuild/SOURCES
           version=$(sed -n 's/^Version:[[:space:]]*\(.*\)/\1/p' packaging/rpm/euromillions.spec)
@@ -182,6 +188,7 @@ jobs:
             bats test test/shell
 
   code-scanning:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -226,4 +233,5 @@ jobs:
           [ "${{ needs.package-rpm.result }}" = success ]
           [ "${{ needs.macos.result }}" = success ]
           [ "${{ needs.freebsd.result }}" = success ]
-          [ "${{ needs.code-scanning.result }}" = success ]
+          [ "${{ needs.code-scanning.result }}" = success ] ||
+            [ "${{ needs.code-scanning.result }}" = skipped ]

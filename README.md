@@ -140,8 +140,8 @@ Stars: 4 11
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
-| `ALERT_THRESHOLD` | `100000000` | mail only at or above this amount, in euro |
-| `ALERT_TO` | unset | recipient; `--cron` exits 1 without it |
+| `ALERT_THRESHOLD` | `100000000` | mail only at or above this amount, in euro; capped at 250 M€ |
+| `ALERT_TO` | unset | one recipient address; `--cron` exits 1 without it |
 | `ALERT_MAILER` | auto | `sendmail`, `msmtp`, `mail`, or a path; auto-detected |
 | `JACKPOT_URL` | FDJ endpoint | where to read the estimated jackpot |
 | `CURL` | `curl` | HTTP client used to read the jackpot |
@@ -189,7 +189,10 @@ The mail is plain text, in the selected language:
 ```
 
 Amounts use SI prefixes and round to the unit: `17 M€`, `100 M€`,
-`1 G€`. `--threshold` prints the configured value:
+`1 G€`. The comparison uses the rounded amount shown in the mail, so a
+jackpot just below 100 M€ can still trigger a 100 M€ threshold. The
+threshold is capped at 250 M€, the EuroMillions limit. `--threshold`
+prints the configured value:
 
 ```console
 $ ./euromillions.sh --threshold
@@ -268,11 +271,11 @@ supported systems:
 | System | Minimum |
 | --- | --- |
 | Debian | 12 |
-| Ubuntu | 24.04 |
+| Ubuntu | 22.04 |
 | Red Hat Enterprise Linux | 9 |
 | CentOS Stream | 9 |
 | FreeBSD | 14 |
-| macOS (Darwin) | 14 |
+| macOS (Darwin) | 15 |
 
 ---
 

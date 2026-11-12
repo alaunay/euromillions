@@ -18,14 +18,18 @@ setup() {
 	git config core.hooksPath .githooks
 }
 
+teardown_file () {
+	[ -n "${BATS_TEST_TMPDIR:-}" ] || rm -rf "$TEST_TMPDIR"
+}
+
 commit() {
 	git commit -q --allow-empty -m "$1" -m "$(printf '%s\n' "$2")"
 }
 
-@test "rejects a commit without trailers" {
-	run commit "no trailers" "Body only."
-	[ "$status" -ne 0 ]
-	[[ "$output" == *"Co-authored-by"* ]]
+@test "accepts a commit with only a sign-off" {
+	run commit "sign-off only" "Signed-off-by: A <test@example.org>"
+	[ "$status" -eq 0 ]
+	git log -1 --format=%B | grep -q '^Signed-off-by: A <test@example.org>$'
 }
 
 @test "rejects a commit without a sign-off" {

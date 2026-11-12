@@ -42,6 +42,8 @@ COLOR_MODE=${EUROMILLIONS_COLOR:-auto}
 JACKPOT_URL=${JACKPOT_URL:-https://www.sto.api.fdj.fr/anonymous/service-draw-info/v3/draws?game_name=euromillions&current=true}
 CURL=${CURL:-curl}
 ALERT_THRESHOLD=${ALERT_THRESHOLD:-100000000}
+# EuroMillions caps the jackpot at 250 million euro
+MAX_AMOUNT=250000000
 ALERT_TO=${ALERT_TO:-}
 ALERT_MAILER=${ALERT_MAILER:-}
 PLAY_URL=${PLAY_URL:-https://www.fdj.fr/jeux-de-tirage/euromillions}
@@ -245,9 +247,9 @@ draw () {
 		"${value_color}" "${draws[*]}" "${RESET}"
 }
 
-# Format an amount of euro with the nearest SI prefix, rounded
-si_amount () {
-	local amount=$1
+# Round an amount to the nearest SI unit: value, divisor, prefix
+si_parts () {
+	local amount=$((10#${1:-0}))
 	local divisor=1
 	local prefix=
 	local value
@@ -266,23 +268,85 @@ si_amount () {
 		divisor=$(( divisor * 1000 ))
 	done
 
+	printf '%s %s %s' "${value}" "${divisor}" "${prefix}"
+}
+
+# Format an amount of euro with the nearest SI prefix, rounded
+si_amount () {
+	local value divisor prefix parts
+
+	parts=$(si_parts "$1")
+	read -r value divisor prefix <<< "$parts"
 	printf '%s %s€' "${value}" "${prefix}"
 }
 
-# Validate the alert threshold
+# Round an amount to the nearest SI unit, in euro
+si_value () {
+	local value divisor prefix parts
+
+	parts=$(si_parts "$1")
+	read -r value divisor prefix <<< "$parts"
+	printf '%s' "$(( value * divisor ))"
+}
+
+# Validate the alert threshold, and convert it to a plain decimal
 check_threshold () {
+	local stripped
+
 	case "$ALERT_THRESHOLD" in
 		''|*[!0-9]*)
 			printf '%s\n' "$(format_message "$(_ 'invalid ALERT_THRESHOLD: %s')" "$ALERT_THRESHOLD")" >&2
 			exit 2
 			;;
 	esac
+
+	stripped=$(printf '%s' "$ALERT_THRESHOLD" | sed 's/^0*//')
+	stripped=${stripped:-0}
+
+	if ((${#stripped} > 9)) || (( 10#$stripped > MAX_AMOUNT )); then
+		printf '%s\n' "$(format_message "$(_ 'ALERT_THRESHOLD is above the %s cap')" \
+			"$(si_amount "$MAX_AMOUNT")")" >&2
+		exit 2
+	fi
+
+	ALERT_THRESHOLD=$((10#$stripped))
+}
+
+# Check that the recipient is one plain address, safe in a mail header
+check_recipient () {
+	case "$ALERT_TO" in
+		'')
+			printf '%s\n' "$(_ 'alert: ALERT_TO is not set, no mail sent')" >&2
+			return 1
+			;;
+		-*)
+			printf '%s\n' "$(format_message "$(_ 'alert: invalid recipient: %s')" "$ALERT_TO")" >&2
+			return 1
+			;;
+		*[[:space:][:cntrl:]]*|*"<"*|*">"*|*","*|*";"*)
+			printf '%s\n' "$(format_message "$(_ 'alert: invalid recipient: %s')" "$ALERT_TO")" >&2
+			return 1
+			;;
+	esac
+}
+
+# Encode a non-ASCII header value, per RFC 2047
+encode_header () {
+	printf '=?UTF-8?B?%s?=' "$(printf '%s' "$1" | base64 | tr -d '\n')"
 }
 
 send_alert () {
 	local subject=$1
 	local body=$2
 	local mailer=$ALERT_MAILER
+
+	if ! check_recipient; then
+		return 1
+	fi
+
+	if printf '%s' "$subject" | LC_ALL=C grep -q '[^ -~]'; then
+		subject=$(encode_header "$subject")
+	fi
 
 	if [ -z "$mailer" ]; then
 		if command -v sendmail >/dev/null 2>&1; then
@@ -318,34 +382,66 @@ send_alert () {
 
 # The next jackpot, in euro, from the FDJ draw information endpoint
 fetch_jackpot () {
-	local response raw value scale
+	local response array entry value scale
 
 	if ! command -v "$CURL" >/dev/null 2>&1; then
 		printf '%s\n' "$(_ 'alert: curl is not installed')" >&2
 		return 1
 	fi
 
-	if ! response=$("$CURL" -fsS --max-time 10 -H 'User-Agent: euromillions' \
-		"$JACKPOT_URL" 2>/dev/null); then
-		printf '%s\n' "$(format_message "$(_ 'alert: cannot read the jackpot from %s')" "$JACKPOT_URL")" >&2
+	if ! response=$("$CURL" -fsSL --max-time 10 --max-filesize 1048576 \
+		-H 'User-Agent: euromillions' "$JACKPOT_URL" 2>/dev/null); then
+		printf '%s\n' "$(_ 'alert: cannot read the next jackpot')" >&2
 		return 1
 	fi
 
-	raw=$(printf '%s' "$response" |
-		sed -n 's/.*"estimated_jackpot":\[{"value":\([0-9]*\),"currency":"EUR","scale":\([0-9]*\)}.*/\1 \2/p')
+	# Keep the estimated jackpot array only: guaranteed amounts come first
+	array=$(printf '%s' "$response" | tr '\n' ' ' |
+		sed -n 's/.*"estimated_jackpot"[[:space:]]*:[[:space:]]*\[\([^]]*\)\].*/\1/p' |
+		head -n 1)
 
-	if [ -z "$raw" ]; then
+	if [ -z "$array" ]; then
 		printf '%s\n' "$(_ 'alert: the jackpot response is invalid')" >&2
 		return 1
 	fi
 
-	value=${raw% *}
-	scale=${raw#* }
+	# Pick the euro entry, whatever the field order or whitespace
+	entry=$(printf '%s' "$array" | tr '\n' ' ' |
+		sed 's/},[[:space:]]*{/}\
+{/g' | grep '"currency"[[:space:]]*:[[:space:]]*"EUR"' | head -n 1 || true)
 
+	if [ -z "$entry" ]; then
+		printf '%s\n' "$(_ 'alert: the jackpot response is invalid')" >&2
+		return 1
+	fi
+
+	value=$(printf '%s' "$entry" |
+		sed -n 's/.*"value"[[:space:]]*:[[:space:]]*\([0-9][0-9]*\).*/\1/p')
+	scale=$(printf '%s' "$entry" |
+		sed -n 's/.*"scale"[[:space:]]*:[[:space:]]*\([0-9][0-9]*\).*/\1/p')
+
+	# The scale is the number of decimal places; cap the value before arithmetic
+	if [ -z "$value" ] || [ -z "$scale" ] || ((${#scale} > 1)) || ((${#value} > 12)); then
+		printf '%s\n' "$(_ 'alert: the jackpot response is invalid')" >&2
+		return 1
+	fi
+
+	scale=$((10#$scale))
+	if (( scale > 9 )); then
+		printf '%s\n' "$(_ 'alert: the jackpot response is invalid')" >&2
+		return 1
+	fi
+
+	value=$((10#$value))
 	while (( scale > 0 )); do
 		value=$((value / 10))
 		scale=$((scale - 1))
 	done
+
+	if (( value > MAX_AMOUNT )); then
+		printf '%s\n' "$(_ 'alert: the jackpot response is invalid')" >&2
+		return 1
+	fi
 
 	printf '%s' "$value"
 }
@@ -366,7 +462,7 @@ alert_body () {
 
 # Mail the next jackpot when it reaches the threshold, and stay silent otherwise
 run_cron () {
-	local jackpot amount
+	local jackpot amount rounded threshold
 
 	check_threshold
 
@@ -374,15 +470,11 @@ run_cron () {
 		return 1
 	fi
 
-	(( jackpot >= ALERT_THRESHOLD )) || return 0
+	rounded=$(si_value "$jackpot")
+	threshold=$(si_value "$ALERT_THRESHOLD")
+	(( rounded >= threshold )) || return 0
 
 	amount=$(si_amount "$jackpot")
-
-	if [ -z "$ALERT_TO" ]; then
-		printf '%s\n' "$(_ 'alert: ALERT_TO is not set, no mail sent')" >&2
-		return 1
-	fi
-
 	send_alert "$(format_message "$(_ 'Euromillions: %s next jackpot')" "$amount")" \
 		"$(alert_body "$amount")"
 }
@@ -398,7 +490,7 @@ error_arg=
 while (( $# )); do
 	case $1 in
 		-l|--lang)
-			if (( $# < 2 )); then
+			if (( $# < 2 )) || [ -z "$2" ]; then
 				error_kind=needs_code
 				error_arg=$1
 				break
@@ -408,6 +500,11 @@ while (( $# )); do
 			;;
 		--lang=*)
 			language=${1#*=}
+			if [ -z "$language" ]; then
+				error_kind=needs_code
+				error_arg=--lang
+				break
+			fi
 			shift
 			;;
 		--no-color)

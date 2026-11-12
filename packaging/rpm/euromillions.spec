@@ -37,6 +37,7 @@ install -d %{buildroot}%{_datadir}/%{name}
 cp -a locale po %{buildroot}%{_datadir}/%{name}/
 
 %files
+%license LICENSE
 %{_bindir}/euromillions
 %{_datadir}/%{name}
 

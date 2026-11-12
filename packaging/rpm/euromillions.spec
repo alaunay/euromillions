@@ -9,8 +9,10 @@ Source0:        %{name}-%{version}.tar.gz
 
 BuildArch:      noarch
 BuildRequires:  bash
+BuildRequires:  bats
 BuildRequires:  coreutils
 BuildRequires:  gettext
+BuildRequires:  git
 Requires:       bash >= 4
 Requires:       coreutils
 Requires:       gettext
@@ -25,6 +27,9 @@ through GNU gettext.
 
 %build
 tools/build-locales.sh
+
+%check
+bats --print-output-on-failure test test/shell
 
 %install
 install -Dm755 euromillions.sh %{buildroot}%{_bindir}/euromillions

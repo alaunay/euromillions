@@ -120,6 +120,14 @@ _ () {
 	fi
 }
 
+# True when the system has the locale, under any UTF-8 spelling
+has_locale () {
+	local want
+
+	want=$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | tr -d '-')
+	locale -a 2>/dev/null | tr '[:upper:]' '[:lower:]' | tr -d '-' | grep -qx "$want"
+}
+
 # gettext ignores LANGUAGE when the locale is C, so a C locale is
 # replaced by the language's own locale. An unknown code keeps the
 # caller's locale: naming a locale that does not exist makes glibc warn.
@@ -137,7 +145,7 @@ setup_locale () {
 	LANGUAGE=$code
 	export TEXTDOMAIN TEXTDOMAINDIR LANGUAGE
 
-	if [ -n "$mapped" ]; then
+	if [ -n "$mapped" ] && has_locale "$mapped"; then
 		LC_MESSAGES=$mapped
 		LANG=$mapped
 		unset LC_ALL

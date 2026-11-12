@@ -1,0 +1,10 @@
+{
+  // Prose style, not syntax. The project keeps long lines, bare URLs,
+  // shell prompts, README inline HTML, and unlabelled fences.
+  "MD013": false,
+  "MD014": false,
+  "MD033": false,
+  "MD034": false,
+  "MD040": false,
+  "MD041": false
+}

@@ -29,7 +29,7 @@ through GNU gettext.
 tools/build-locales.sh
 
 %check
-bats test test/shell
+bats --print-output-on-failure test test/shell
 
 %install
 install -Dm755 euromillions.sh %{buildroot}%{_bindir}/euromillions

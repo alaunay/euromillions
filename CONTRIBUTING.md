@@ -37,7 +37,7 @@ generates the French locale, builds the catalogues, then runs shellcheck
 and the suite on every push to `master` and on every pull request, in
 [`.github/workflows/tests.yml`](.github/workflows/tests.yml). The suite runs
 in containers on Ubuntu 22.04, 24.04, and 26.04, Debian 12 and 13, and
-CentOS Stream 9 and 10; on macOS 15 and 26; and on FreeBSD 14.5 and 15.2.
+CentOS Stream 9 and 10; on macOS 15 and 26; and on FreeBSD 14.5 and 15.1.
 
 `RANDOM_SOURCE` points `shuf` at another entropy file, which makes a draw
 reproducible.

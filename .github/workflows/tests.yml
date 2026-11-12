@@ -37,7 +37,7 @@ jobs:
           apt-get install -y -qq bats gettext git locales python3 shellcheck
 
       - name: Generate the French locale
-        run: locale-gen fr_FR.UTF-8
+        run: localedef -i fr_FR -f UTF-8 fr_FR.UTF-8
 
       - name: Build the catalogues
         run: tools/build-locales.sh
@@ -92,7 +92,7 @@ jobs:
           apt-get install -y -qq bats build-essential debhelper gettext git locales shellcheck
 
       - name: Generate the French locale
-        run: locale-gen fr_FR.UTF-8
+        run: localedef -i fr_FR -f UTF-8 fr_FR.UTF-8
 
       - name: Build the Debian package
         run: |
@@ -122,7 +122,7 @@ jobs:
       - name: Install the packaging tools
         run: |
           dnf install -y epel-release
-          dnf install -y bats gettext git rpm-build tar gzip
+          dnf install -y bats gettext git glibc-langpack-fr rpm-build tar gzip
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -167,7 +167,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name: ["14.5", "15.2"]
+        name: ["14.5", "15.1"]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 

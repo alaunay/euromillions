@@ -26,6 +26,8 @@ setup_file () {
 require_translation () {
 	[ -f "${ROOT}/locale/fr/LC_MESSAGES/euromillions.mo" ] ||
 		skip "the french catalogue is not built"
+	locale -a 2>/dev/null | grep -qi '^fr_FR\.utf-\?8$' ||
+		skip "the french locale is not generated"
 }
 
 numbers_line () {

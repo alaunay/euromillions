@@ -72,8 +72,10 @@ the converter working when the shellcheck fields change; it maps
 ## Metadata
 
 `metadata.json` follows the OpenVox module metadata format: name, version,
-sources, dependencies, and `operating_system_support`. Update the system
-list when a supported platform changes, then run:
+sources, dependencies, and `operatingsystem_support`. Each entry has an
+`operatingsystem` and an `operatingsystemrelease` list of every supported
+release; there is no `min_version` key. Update the list when a supported
+platform changes, then run:
 
 ```
 python3 tools/check-metadata.py

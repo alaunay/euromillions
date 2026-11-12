@@ -2,7 +2,8 @@
 """Validate metadata.json against the subset of the module format used here.
 
 The layout follows the OpenVox module metadata: a name, a version, the
-sources, and an operating_system_support list. Exit status 1 on a problem.
+sources, and an operatingsystem_support list that names every supported
+release. Exit status 1 on a problem.
 """
 
 import json
@@ -18,7 +19,7 @@ REQUIRED = (
     "license",
     "source",
     "dependencies",
-    "operating_system_support",
+    "operatingsystem_support",
 )
 
 NAME = re.compile(r"^[a-z0-9_]+-[a-z0-9_]+$")
@@ -57,18 +58,19 @@ def main():
     if not isinstance(metadata["dependencies"], list):
         return fail("'dependencies' must be a list")
 
-    systems = metadata["operating_system_support"]
+    systems = metadata["operatingsystem_support"]
 
     if not isinstance(systems, list) or not systems:
-        return fail("'operating_system_support' must be a non-empty list")
+        return fail("'operatingsystem_support' must be a non-empty list")
 
     seen = set()
+    releases = 0
 
     for entry in systems:
         if not isinstance(entry, dict):
             return fail("each operating system must be an object")
 
-        system = entry.get("operating_system")
+        system = entry.get("operatingsystem")
 
         if not isinstance(system, str) or not system:
             return fail("each operating system needs a name")
@@ -78,11 +80,24 @@ def main():
 
         seen.add(system)
 
-        for bound in ("min_version", "max_version"):
-            if bound in entry and not NUMBER.match(str(entry[bound])):
-                return fail(f"'{bound}' of '{system}' must be a number")
+        supported = entry.get("operatingsystemrelease")
 
-    print(f"metadata.json: ok, {len(seen)} systems")
+        if not isinstance(supported, list) or not supported:
+            return fail(f"'{system}' needs a non-empty operatingsystemrelease list")
+
+        listed = set()
+
+        for release in supported:
+            if not isinstance(release, str) or not NUMBER.match(release):
+                return fail(f"release {release!r} of '{system}' must be a number")
+
+            if release in listed:
+                return fail(f"release '{release}' of '{system}' is listed twice")
+
+            listed.add(release)
+            releases += 1
+
+    print(f"metadata.json: ok, {len(seen)} systems, {releases} releases")
     return 0
 
 

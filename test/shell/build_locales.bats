@@ -14,6 +14,10 @@ setup() {
 	MO="${SANDBOX}/locale/fr/LC_MESSAGES/euromillions.mo"
 }
 
+teardown_file () {
+	[ -n "${BATS_TEST_TMPDIR:-}" ] || rm -rf "$TEST_TMPDIR"
+}
+
 @test "compiles a catalogue for each po file" {
 	run "${SANDBOX}/tools/build-locales.sh"
 	[ "$status" -eq 0 ]

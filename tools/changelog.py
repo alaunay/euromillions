@@ -157,8 +157,10 @@ def main(argv):
     parser.add_argument("--output", help="insert or replace the section in this file")
     arguments = parser.parse_args(argv[1:])
 
+    tag = arguments.tag if arguments.tag.startswith("v") else f"v{arguments.tag}"
+
     try:
-        text = build(arguments.tag)
+        text = build(tag)
     except ValueError as error:
         print(error, file=sys.stderr)
         return 2
@@ -168,8 +170,8 @@ def main(argv):
 
     if arguments.output:
         path = Path(arguments.output)
-        path.write_text(merge(path, arguments.tag, text), encoding="utf-8")
-        print(f"wrote {path}: {arguments.tag}")
+        path.write_text(merge(path, tag, text), encoding="utf-8")
+        print(f"wrote {path}: {tag}")
     else:
         sys.stdout.write(text)
 

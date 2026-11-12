@@ -1,6 +1,7 @@
 #!/bin/sh
 #
-# Enforce the trailer rules from AGENTS.md.
+# Enforce the sign-off trailer. Co-authored-by stays optional: add it for
+# every author of a change, an AI model included.
 #
 # Bypass with "git commit --no-verify". This is a guard against mistakes,
 # not a security boundary: the remote requires GPG-signed commits.
@@ -17,10 +18,6 @@ fail () {
 }
 
 trailers=$(git interpret-trailers --parse "$msg_file")
-
-if ! printf '%s\n' "$trailers" | grep -Eqi '^co-authored-by: .+ <.+@.+>$'; then
-	fail "missing or malformed Co-authored-by trailer"
-fi
 
 signoff=$(printf '%s\n' "$trailers" |
 	awk 'tolower($0) ~ /^signed-off-by:/ { print; exit }' |

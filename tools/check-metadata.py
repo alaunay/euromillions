@@ -46,10 +46,12 @@ def main():
         if key not in metadata:
             return fail(f"missing key '{key}'")
 
-    if not NAME.match(metadata["name"]):
+    name = metadata["name"]
+    if not isinstance(name, str) or not NAME.match(name):
         return fail("'name' must look like author-module")
 
-    if not VERSION.match(metadata["version"]):
+    version = metadata["version"]
+    if not isinstance(version, str) or not VERSION.match(version):
         return fail("'version' must be a semantic version")
 
     if not isinstance(metadata["dependencies"], list):

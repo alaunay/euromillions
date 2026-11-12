@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-12 00:50+0100\n"
+"POT-Creation-Date: 2026-11-12 02:30+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,114 +17,123 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: euromillions.sh:157 euromillions.sh:465
+#: euromillions.sh:167 euromillions.sh:560
 msgid "Numbers"
 msgstr ""
 
-#: euromillions.sh:159
+#: euromillions.sh:169
 msgid "no translation for %s, using English"
 msgstr ""
 
-#: euromillions.sh:191
+#: euromillions.sh:201
 msgid "Usage:"
 msgstr ""
 
-#: euromillions.sh:192
+#: euromillions.sh:202
 msgid "Draw %s numbers from %s to %s and %s stars from %s to %s."
 msgstr ""
 
-#: euromillions.sh:195
+#: euromillions.sh:205
 msgid "Options:"
 msgstr ""
 
-#: euromillions.sh:196
+#: euromillions.sh:206
 msgid "output language, overriding the locale"
 msgstr ""
 
-#: euromillions.sh:197
+#: euromillions.sh:207
 msgid "mail the next jackpot when it reaches the threshold"
 msgstr ""
 
-#: euromillions.sh:198
+#: euromillions.sh:208
 msgid "print the alert threshold and exit"
 msgstr ""
 
-#: euromillions.sh:199
+#: euromillions.sh:209
 msgid "never use colours"
 msgstr ""
 
-#: euromillions.sh:200
+#: euromillions.sh:210
 msgid "show this help"
 msgstr ""
 
-#: euromillions.sh:201
+#: euromillions.sh:211
 msgid "Languages:"
 msgstr ""
 
-#: euromillions.sh:224
+#: euromillions.sh:234
 msgid "draw failed"
 msgstr ""
 
-#: euromillions.sh:231
+#: euromillions.sh:241
 msgid "short draw"
 msgstr ""
 
-#: euromillions.sh:268
+#: euromillions.sh:298
 msgid "invalid ALERT_THRESHOLD: %s"
 msgstr ""
 
-#: euromillions.sh:290
-msgid "alert: no mailer found, set ALERT_MAILER"
+#: euromillions.sh:307
+msgid "ALERT_THRESHOLD is above the %s cap"
 msgstr ""
 
-#: euromillions.sh:298 euromillions.sh:304
-msgid "alert: the mailer failed"
-msgstr ""
-
-#: euromillions.sh:316
-msgid "alert: curl is not installed"
-msgstr ""
-
-#: euromillions.sh:322
-msgid "alert: cannot read the jackpot from %s"
-msgstr ""
-
-#: euromillions.sh:330
-msgid "alert: the jackpot response is invalid"
-msgstr ""
-
-#: euromillions.sh:351
-msgid "EUROMILLIONS - NEXT DRAW"
-msgstr ""
-
-#: euromillions.sh:353
-msgid "Jackpot:"
-msgstr ""
-
-#: euromillions.sh:354
-msgid "Play:"
-msgstr ""
-
-#: euromillions.sh:356
-msgid "Fill a grid before the draw. Good luck!"
-msgstr ""
-
-#: euromillions.sh:374
+#: euromillions.sh:319
 msgid "alert: ALERT_TO is not set, no mail sent"
 msgstr ""
 
-#: euromillions.sh:378
+#: euromillions.sh:323 euromillions.sh:327
+msgid "alert: invalid recipient: %s"
+msgstr ""
+
+#: euromillions.sh:362
+msgid "alert: no mailer found, set ALERT_MAILER"
+msgstr ""
+
+#: euromillions.sh:370 euromillions.sh:376
+msgid "alert: the mailer failed"
+msgstr ""
+
+#: euromillions.sh:388
+msgid "alert: curl is not installed"
+msgstr ""
+
+#: euromillions.sh:394
+msgid "alert: cannot read the next jackpot"
+msgstr ""
+
+#: euromillions.sh:404 euromillions.sh:415 euromillions.sh:421
+#: euromillions.sh:432
+msgid "alert: the jackpot response is invalid"
+msgstr ""
+
+#: euromillions.sh:445
+msgid "EUROMILLIONS - NEXT DRAW"
+msgstr ""
+
+#: euromillions.sh:447
+msgid "Jackpot:"
+msgstr ""
+
+#: euromillions.sh:448
+msgid "Play:"
+msgstr ""
+
+#: euromillions.sh:450
+msgid "Fill a grid before the draw. Good luck!"
+msgstr ""
+
+#: euromillions.sh:468
 msgid "Euromillions: %s next jackpot"
 msgstr ""
 
-#: euromillions.sh:435
+#: euromillions.sh:530
 msgid "option %s needs a language code"
 msgstr ""
 
-#: euromillions.sh:442
+#: euromillions.sh:537
 msgid "unknown argument: %s"
 msgstr ""
 
-#: euromillions.sh:466
+#: euromillions.sh:561
 msgid "Stars"
 msgstr ""

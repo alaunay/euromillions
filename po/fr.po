@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: euromillions\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-12 00:50+0100\n"
+"POT-Creation-Date: 2026-11-12 02:30+0100\n"
 "PO-Revision-Date: 2026-11-08 21:00+0100\n"
 "Last-Translator: Arnaud Launay <asl@launay.org>\n"
 "Language-Team: French\n"
@@ -15,109 +15,120 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: euromillions.sh:157 euromillions.sh:465
+#: euromillions.sh:167 euromillions.sh:560
 msgid "Numbers"
 msgstr "Numéros"
 
-#: euromillions.sh:159
+#: euromillions.sh:169
 msgid "no translation for %s, using English"
 msgstr "pas de traduction pour %s, sortie en anglais"
 
-#: euromillions.sh:191
+#: euromillions.sh:201
 msgid "Usage:"
 msgstr "Utilisation :"
 
-#: euromillions.sh:192
+#: euromillions.sh:202
 msgid "Draw %s numbers from %s to %s and %s stars from %s to %s."
 msgstr "Tirer %s numéros de %s à %s et %s étoiles de %s à %s."
 
-#: euromillions.sh:195
+#: euromillions.sh:205
 msgid "Options:"
 msgstr "Options :"
 
-#: euromillions.sh:196
+#: euromillions.sh:206
 msgid "output language, overriding the locale"
 msgstr "langue de sortie, prioritaire sur la locale"
 
-#: euromillions.sh:197
+#: euromillions.sh:207
 msgid "mail the next jackpot when it reaches the threshold"
 msgstr "envoyer le prochain jackpot par mail dès qu'il atteint le seuil"
 
-#: euromillions.sh:198
+#: euromillions.sh:208
 msgid "print the alert threshold and exit"
 msgstr "afficher le seuil d'alerte et quitter"
 
-#: euromillions.sh:199
+#: euromillions.sh:209
 msgid "never use colours"
 msgstr "ne jamais utiliser de couleurs"
 
-#: euromillions.sh:200
+#: euromillions.sh:210
 msgid "show this help"
 msgstr "afficher cette aide"
 
-#: euromillions.sh:201
+#: euromillions.sh:211
 msgid "Languages:"
 msgstr "Langues :"
 
-#: euromillions.sh:224
+#: euromillions.sh:234
 msgid "draw failed"
 msgstr "tirage impossible"
 
-#: euromillions.sh:231
+#: euromillions.sh:241
 msgid "short draw"
 msgstr "tirage incomplet"
 
-#: euromillions.sh:268
+#: euromillions.sh:298
 msgid "invalid ALERT_THRESHOLD: %s"
 msgstr "ALERT_THRESHOLD invalide : %s"
 
-#: euromillions.sh:290
-msgid "alert: no mailer found, set ALERT_MAILER"
-msgstr "alerte : aucun outil d'envoi, définissez ALERT_MAILER"
+msgid "ALERT_THRESHOLD is above the %s cap"
+msgstr "ALERT_THRESHOLD dépasse le plafond de %s"
 
-#: euromillions.sh:298 euromillions.sh:304
-msgid "alert: the mailer failed"
-msgstr "alerte : l'envoi du mail a échoué"
-
-#: euromillions.sh:316
-msgid "alert: curl is not installed"
-msgstr "alerte : curl n'est pas installé"
-
-#: euromillions.sh:322
-msgid "alert: cannot read the jackpot from %s"
-msgstr "alerte : impossible de lire le jackpot depuis %s"
-
-#: euromillions.sh:330
-msgid "alert: the jackpot response is invalid"
-msgstr "alerte : la réponse du jackpot est invalide"
-
-msgid "EUROMILLIONS - NEXT DRAW"
-msgstr "EUROMILLIONS - PROCHAIN TIRAGE"
-
-msgid "Jackpot:"
-msgstr "Jackpot :"
-
-msgid "Play:"
-msgstr "Jouer :"
-
-msgid "Fill a grid before the draw. Good luck!"
-msgstr "Remplissez une grille avant le tirage. Bonne chance !"
-
-#: euromillions.sh:374
+#: euromillions.sh:319
 msgid "alert: ALERT_TO is not set, no mail sent"
 msgstr "alerte : ALERT_TO n'est pas défini, aucun mail envoyé"
 
+msgid "alert: invalid recipient: %s"
+msgstr "alerte : destinataire invalide : %s"
+
+#: euromillions.sh:362
+msgid "alert: no mailer found, set ALERT_MAILER"
+msgstr "alerte : aucun outil d'envoi, définissez ALERT_MAILER"
+
+#: euromillions.sh:370 euromillions.sh:376
+msgid "alert: the mailer failed"
+msgstr "alerte : l'envoi du mail a échoué"
+
+#: euromillions.sh:388
+msgid "alert: curl is not installed"
+msgstr "alerte : curl n'est pas installé"
+
+msgid "alert: cannot read the next jackpot"
+msgstr "alerte : impossible de lire le prochain jackpot"
+
+#: euromillions.sh:404 euromillions.sh:415 euromillions.sh:421
+#: euromillions.sh:432
+msgid "alert: the jackpot response is invalid"
+msgstr "alerte : la réponse du jackpot est invalide"
+
+#: euromillions.sh:445
+msgid "EUROMILLIONS - NEXT DRAW"
+msgstr "EUROMILLIONS - PROCHAIN TIRAGE"
+
+#: euromillions.sh:447
+msgid "Jackpot:"
+msgstr "Jackpot :"
+
+#: euromillions.sh:448
+msgid "Play:"
+msgstr "Jouer :"
+
+#: euromillions.sh:450
+msgid "Fill a grid before the draw. Good luck!"
+msgstr "Remplissez une grille avant le tirage. Bonne chance !"
+
+#: euromillions.sh:468
 msgid "Euromillions: %s next jackpot"
 msgstr "Euromillions : %s au prochain tirage"
 
-#: euromillions.sh:435
+#: euromillions.sh:530
 msgid "option %s needs a language code"
 msgstr "l'option %s attend un code de langue"
 
-#: euromillions.sh:442
+#: euromillions.sh:537
 msgid "unknown argument: %s"
 msgstr "argument inconnu : %s"
 
-#: euromillions.sh:466
+#: euromillions.sh:561
 msgid "Stars"
 msgstr "Étoiles"

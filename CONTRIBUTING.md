@@ -40,7 +40,9 @@ in containers on Ubuntu 22.04, 24.04, and 26.04, Debian 12 and 13, and
 CentOS Stream 9 and 10; on macOS 15 and 26; and on FreeBSD 14.5 and 15.1.
 
 `RANDOM_SOURCE` points `shuf` at another entropy file, which makes a draw
-reproducible.
+reproducible. `REQUIRE_TRANSLATION=1` makes a missing French locale or
+catalogue fail the suite instead of skipping the translation cases; CI sets
+it.
 
 ## Translations
 
@@ -147,7 +149,7 @@ a finding.
 
 `master` only takes pull requests, and every pull request must:
 
-- be GPG-signed, or GitHub rejects the push;
+- be GPG-signed, or branch protection blocks the merge;
 - carry a `Signed-off-by` trailer, which the DCO check enforces on the
   pull request;
 - carry one `Co-authored-by` trailer per additional author when someone

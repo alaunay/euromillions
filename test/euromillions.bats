@@ -9,6 +9,11 @@ SCRIPT="${BATS_TEST_DIRNAME}/../euromillions.sh"
 # Ubuntu 22.04 ships an older bats without BATS_TEST_TMPDIR
 TEST_TMPDIR=${BATS_TEST_TMPDIR:-$(mktemp -d)}
 
+# Remove the fallback directory when bats does not manage it
+teardown_file () {
+	[ -n "${BATS_TEST_TMPDIR:-}" ] || rm -rf "$TEST_TMPDIR"
+}
+
 # The tests must run the script with bash 4 or later, not the system bash
 BASH_BIN=${BASH_BIN:-$(command -v bash)}
 ROOT=$(cd -- "${BATS_TEST_DIRNAME}/.." && pwd)
@@ -22,12 +27,22 @@ setup_file () {
 	"${ROOT}/tools/build-locales.sh" >/dev/null 2>&1 || true
 }
 
+# Skip in a plain environment; fail when the caller requires translations
+fail_or_skip () {
+	if [ -n "${REQUIRE_TRANSLATION:-}" ]; then
+		printf '%s\n' "$1" >&2
+		false
+	else
+		skip "$1"
+	fi
+}
+
 # Skip when msgfmt was unavailable and the catalogue is missing
 require_translation () {
 	[ -f "${ROOT}/locale/fr/LC_MESSAGES/euromillions.mo" ] ||
-		skip "the french catalogue is not built"
+		fail_or_skip "the french catalogue is not built"
 	locale -a 2>/dev/null | grep -qi '^fr_FR\.utf-\?8$' ||
-		skip "the french locale is not generated"
+		fail_or_skip "the french locale is not generated"
 }
 
 numbers_line () {
@@ -344,8 +359,10 @@ make_mailer () {
 	[ "$status" -eq 0 ]
 	[ -z "$output" ]
 	[ -f "$TEST_TMPDIR/mail.out" ]
-	grep -q 'ARGS: -s Euromillions: 150 M€ next jackpot me@example.org' \
-		"$TEST_TMPDIR/mail.out"
+	grep -q '^ARGS: -s =?UTF-8?B?.*?= me@example.org$' "$TEST_TMPDIR/mail.out"
+	subject=$(sed -n 's/^ARGS: -s \([^ ]*\) .*/\1/p' "$TEST_TMPDIR/mail.out" |
+		sed 's/^=?UTF-8?B?//; s/?=$//' | base64 -d)
+	[ "$subject" = "Euromillions: 150 M€ next jackpot" ]
 	grep -q '^ Jackpot: 150 M€$' "$TEST_TMPDIR/mail.out"
 	grep -q '^ Play: https://www.fdj.fr/jeux-de-tirage/euromillions$' \
 		"$TEST_TMPDIR/mail.out"
@@ -353,9 +370,19 @@ make_mailer () {
 	! grep -q '<html' "$TEST_TMPDIR/mail.out"
 }
 
-@test "cron stays quiet below the threshold" {
+@test "cron rounds the jackpot before comparing" {
 	make_mailer
 	write_jackpot 9999999900
+	run env ALERT_TO=me@example.org ALERT_MAILER="$TEST_TMPDIR/mailer" \
+		JACKPOT_URL="file://$TEST_TMPDIR/jackpot.json" "$SCRIPT" --cron
+	[ "$status" -eq 0 ]
+	[ -f "$TEST_TMPDIR/mail.out" ]
+	grep -q '^ Jackpot: 100 M€$' "$TEST_TMPDIR/mail.out"
+}
+
+@test "cron stays quiet below the threshold" {
+	make_mailer
+	write_jackpot 9900000000
 	run env ALERT_TO=me@example.org ALERT_MAILER="$TEST_TMPDIR/mailer" \
 		JACKPOT_URL="file://$TEST_TMPDIR/jackpot.json" "$SCRIPT" --cron
 	[ "$status" -eq 0 ]
@@ -387,7 +414,7 @@ make_mailer () {
 @test "cron exits 1 when the jackpot cannot be read" {
 	run env JACKPOT_URL="file://$TEST_TMPDIR/missing.json" "$SCRIPT" --cron
 	[ "$status" -eq 1 ]
-	[[ "$output" == *"cannot read the jackpot"* ]]
+	[[ "$output" == *"cannot read the next jackpot"* ]]
 }
 
 @test "cron exits 1 when no recipient is set" {
@@ -395,6 +422,74 @@ make_mailer () {
 	run env JACKPOT_URL="file://$TEST_TMPDIR/jackpot.json" "$SCRIPT" --cron
 	[ "$status" -eq 1 ]
 	[[ "$output" == *"ALERT_TO is not set"* ]]
+}
+
+@test "cron rejects a recipient with a newline" {
+	make_mailer
+	write_jackpot 15000000000
+	run env ALERT_TO=$'me@example.org\nBcc: other@example.org' \
+		ALERT_MAILER="$TEST_TMPDIR/mailer" \
+		JACKPOT_URL="file://$TEST_TMPDIR/jackpot.json" "$SCRIPT" --cron
+	[ "$status" -eq 1 ]
+	[[ "$output" == *"invalid recipient"* ]]
+	[ ! -f "$TEST_TMPDIR/mail.out" ]
+}
+
+@test "cron rejects a recipient that looks like an option" {
+	make_mailer
+	write_jackpot 15000000000
+	run env ALERT_TO=-X/tmp/pwn ALERT_MAILER="$TEST_TMPDIR/mailer" \
+		JACKPOT_URL="file://$TEST_TMPDIR/jackpot.json" "$SCRIPT" --cron
+	[ "$status" -eq 1 ]
+	[[ "$output" == *"invalid recipient"* ]]
+}
+
+@test "cron reads the estimated jackpot, not the guaranteed amount" {
+	make_mailer
+	printf '%s\n' '{"guaranteed_amounts":[{"value":100000000,"currency":"EUR","scale":2}],"estimated_jackpot":[{"value":15000000000,"currency":"EUR","scale":2}]}' \
+		> "$TEST_TMPDIR/jackpot.json"
+	run env ALERT_TO=me@example.org ALERT_MAILER="$TEST_TMPDIR/mailer" \
+		JACKPOT_URL="file://$TEST_TMPDIR/jackpot.json" "$SCRIPT" --cron
+	[ "$status" -eq 0 ]
+	grep -q '^ Jackpot: 150 M€$' "$TEST_TMPDIR/mail.out"
+}
+
+@test "cron accepts reordered fields and pretty printing" {
+	make_mailer
+	cat > "$TEST_TMPDIR/jackpot.json" <<'EOF'
+[
+  {
+    "estimated_jackpot": [
+      {
+        "scale": 2,
+        "currency": "EUR",
+        "value": 15000000000
+      }
+    ]
+  }
+]
+EOF
+	run env ALERT_TO=me@example.org ALERT_MAILER="$TEST_TMPDIR/mailer" \
+		JACKPOT_URL="file://$TEST_TMPDIR/jackpot.json" "$SCRIPT" --cron
+	[ "$status" -eq 0 ]
+	grep -q '^ Jackpot: 150 M€$' "$TEST_TMPDIR/mail.out"
+}
+
+@test "cron rejects an oversized jackpot scale" {
+	printf '{"estimated_jackpot":[{"value":1700000000,"currency":"EUR","scale":999999999}]}\n' \
+		> "$TEST_TMPDIR/jackpot.json"
+	run env ALERT_TO=me@example.org ALERT_MAILER=/bin/true \
+		JACKPOT_URL="file://$TEST_TMPDIR/jackpot.json" "$SCRIPT" --cron
+	[ "$status" -eq 1 ]
+	[[ "$output" == *"response is invalid"* ]]
+}
+
+@test "cron rejects a jackpot above the cap" {
+	write_jackpot 30000000000
+	run env ALERT_TO=me@example.org ALERT_MAILER=/bin/true \
+		JACKPOT_URL="file://$TEST_TMPDIR/jackpot.json" "$SCRIPT" --cron
+	[ "$status" -eq 1 ]
+	[[ "$output" == *"response is invalid"* ]]
 }
 
 @test "cron exits 1 when the mailer fails" {
@@ -427,6 +522,35 @@ make_mailer () {
 	run env ALERT_THRESHOLD=abc "$SCRIPT" --threshold
 	[ "$status" -eq 2 ]
 	[[ "$output" == *"ALERT_THRESHOLD"* ]]
+}
+
+@test "caps the threshold at 250 M€" {
+	run env ALERT_THRESHOLD=250000001 "$SCRIPT" --threshold
+	[ "$status" -eq 2 ]
+	[[ "$output" == *"250 M€"* ]]
+}
+
+@test "accepts the 250 M€ cap" {
+	run env ALERT_THRESHOLD=250000000 "$SCRIPT" --threshold
+	[ "$status" -eq 0 ]
+	[ "$output" = "250 M€" ]
+}
+
+@test "reads a threshold with leading zeros in decimal" {
+	run env ALERT_THRESHOLD=010000000 "$SCRIPT" --threshold
+	[ "$status" -eq 0 ]
+	[ "$output" = "10 M€" ]
+}
+
+@test "rejects an oversized threshold" {
+	run env ALERT_THRESHOLD=99999999999999999999 "$SCRIPT" --threshold
+	[ "$status" -eq 2 ]
+}
+
+@test "rejects an empty language code" {
+	run "$SCRIPT" --lang=
+	[ "$status" -eq 2 ]
+	[[ "$output" == *"needs a language code"* ]]
 }
 
 @test "rejects an invalid threshold in cron" {

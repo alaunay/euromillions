@@ -14,30 +14,49 @@
       "version_requirement": ">= 4.0.0"
     }
   ],
-  "operating_system_support": [
+  "operatingsystem_support": [
     {
-      "operating_system": "Debian",
-      "min_version": "12"
+      "operatingsystem": "Debian",
+      "operatingsystemrelease": [
+        "12",
+        "13"
+      ]
     },
     {
-      "operating_system": "Ubuntu",
-      "min_version": "22.04"
+      "operatingsystem": "Ubuntu",
+      "operatingsystemrelease": [
+        "22.04",
+        "24.04",
+        "26.04"
+      ]
     },
     {
-      "operating_system": "RedHat",
-      "min_version": "9"
+      "operatingsystem": "RedHat",
+      "operatingsystemrelease": [
+        "9",
+        "10"
+      ]
     },
     {
-      "operating_system": "CentOS",
-      "min_version": "9"
+      "operatingsystem": "CentOS",
+      "operatingsystemrelease": [
+        "9",
+        "10"
+      ]
     },
     {
-      "operating_system": "FreeBSD",
-      "min_version": "14"
+      "operatingsystem": "FreeBSD",
+      "operatingsystemrelease": [
+        "14.5",
+        "15.1"
+      ]
     },
     {
-      "operating_system": "Darwin",
-      "min_version": "15"
+      "operatingsystem": "Darwin",
+      "operatingsystemrelease": [
+        "15",
+        "26"
+      ]
     }
   ]
 }

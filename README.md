@@ -265,17 +265,17 @@ and 26, and FreeBSD 14.5 and 15.1.
 
 ## Supported systems
 
-`metadata.json` follows the OpenVox module metadata format and lists the
-supported systems:
+`metadata.json` follows the OpenVox module metadata format and lists every
+supported release:
 
-| System | Minimum |
+| System | Releases |
 | --- | --- |
-| Debian | 12 |
-| Ubuntu | 22.04 |
-| Red Hat Enterprise Linux | 9 |
-| CentOS Stream | 9 |
-| FreeBSD | 14 |
-| macOS (Darwin) | 15 |
+| Debian | 12, 13 |
+| Ubuntu | 22.04, 24.04, 26.04 |
+| Red Hat Enterprise Linux | 9, 10 |
+| CentOS Stream | 9, 10 |
+| FreeBSD | 14.5, 15.1 |
+| macOS (Darwin) | 15, 26 |
 
 ---
 

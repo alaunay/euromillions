@@ -33,6 +33,8 @@ bats --print-output-on-failure test test/shell
 
 %install
 install -Dm755 euromillions.sh %{buildroot}%{_bindir}/euromillions
+install -Dm644 completions/euromillions.bash \
+  %{buildroot}%{_datadir}/bash-completion/completions/euromillions
 install -d %{buildroot}%{_datadir}/%{name}
 cp -a locale po %{buildroot}%{_datadir}/%{name}/
 
@@ -40,6 +42,7 @@ cp -a locale po %{buildroot}%{_datadir}/%{name}/
 %license LICENSE
 %{_bindir}/euromillions
 %{_datadir}/%{name}
+%{_datadir}/bash-completion/completions/euromillions
 
 %changelog
 * Mon Nov 09 2026 Arnaud Launay <asl@launay.org> - 0.0.0-1

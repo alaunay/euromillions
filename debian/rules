@@ -11,5 +11,7 @@ override_dh_auto_test:
 
 override_dh_auto_install:
 	install -Dm755 euromillions.sh debian/euromillions/usr/bin/euromillions
+	install -Dm644 completions/euromillions.bash \
+		debian/euromillions/usr/share/bash-completion/completions/euromillions
 	install -d debian/euromillions/usr/share/euromillions
 	cp -a locale po debian/euromillions/usr/share/euromillions/

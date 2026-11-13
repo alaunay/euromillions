@@ -50,6 +50,18 @@ Stars: 3 12
 The script needs nothing built. See [Requirements](#requirements) for the
 few tools it expects.
 
+### Shell completion
+
+The packages install a bash completion in
+`/usr/share/bash-completion/completions/euromillions`. From a checkout,
+source the file instead:
+
+```console
+$ source completions/euromillions.bash
+```
+
+It completes the options and the language codes that `--help` lists.
+
 ### Debian and Ubuntu
 
 Packages are served by the shared

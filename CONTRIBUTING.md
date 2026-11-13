@@ -18,7 +18,7 @@ The suite needs `bats` and `shellcheck`:
 
 ```console
 $ bats test test/shell
-$ shellcheck euromillions.sh .githooks/commit-msg tools/build-locales.sh
+$ shellcheck euromillions.sh .githooks/commit-msg tools/build-locales.sh completions/euromillions.bash
 ```
 
 The bats suite runs shellcheck as one of its cases, and skips that case
@@ -117,8 +117,10 @@ $ git archive --format=tar.gz --prefix=euromillions-1.0.0/ \
 $ rpmbuild -bb packaging/rpm/euromillions.spec --define "_topdir $PWD/rpmbuild"
 ```
 
-The packages install `euromillions` in `/usr/bin` and its catalogues in
-`/usr/share/euromillions`. CI builds both and attaches them to the run.
+The packages install `euromillions` in `/usr/bin`, its catalogues in
+`/usr/share/euromillions`, and the bash completion in
+`/usr/share/bash-completion/completions`. CI builds both and attaches
+them to the run.
 
 ## Releases
 

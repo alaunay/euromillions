@@ -50,7 +50,7 @@ jobs:
           python3 -m py_compile tools/changelog.py tools/shellcheck-sarif.py
 
       - name: Run shellcheck
-        run: shellcheck euromillions.sh .githooks/commit-msg tools/build-locales.sh
+        run: shellcheck euromillions.sh .githooks/commit-msg tools/build-locales.sh completions/euromillions.bash
 
       - name: Run the test suite
         run: bats test test/shell
@@ -204,7 +204,7 @@ jobs:
       - name: Convert the shellcheck findings
         run: |
           shellcheck -f json1 euromillions.sh .githooks/commit-msg \
-            tools/build-locales.sh > shellcheck.json || true
+            tools/build-locales.sh completions/euromillions.bash > shellcheck.json || true
           python3 tools/shellcheck-sarif.py shellcheck.json shellcheck.sarif
 
       - uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3

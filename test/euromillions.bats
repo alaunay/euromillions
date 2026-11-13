@@ -564,6 +564,6 @@ EOF
 		skip "shellcheck is not installed"
 	fi
 	root=$(cd -- "${BATS_TEST_DIRNAME}/.." && pwd)
-	run shellcheck "$root/euromillions.sh" "$root/.githooks/commit-msg" "$root/tools/build-locales.sh"
+	run shellcheck "$root/euromillions.sh" "$root/.githooks/commit-msg" "$root/tools/build-locales.sh" "$root/completions/euromillions.bash"
 	[ "$status" -eq 0 ]
 }

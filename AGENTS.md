@@ -16,6 +16,9 @@ Run it with:
 The grid shape lives in the variables at the top of the script. Each one
 reads its environment, with the EuroMillions value as the default.
 
+Bash completion lives in `completions/euromillions.bash` and installs as
+`/usr/share/bash-completion/completions/euromillions`.
+
 Output strings are gettext msgids in `euromillions.sh`. Translations
 live in `po/`, with `po/euromillions.pot` as the template. `CODE` comes
 from `--lang`, then `EUROMILLIONS_LANG`, then the locale, then `en`. An
@@ -35,7 +38,7 @@ fails on a missing binary as well as on a finding:
 
 ```
 bats test test/shell
-shellcheck euromillions.sh .githooks/commit-msg tools/build-locales.sh
+shellcheck euromillions.sh .githooks/commit-msg tools/build-locales.sh completions/euromillions.bash
 ```
 
 `RANDOM_SOURCE` overrides the entropy source that `shuf` reads. A fixed
@@ -43,8 +46,8 @@ file makes a draw reproducible, which the tests use. The default is
 `/dev/urandom`.
 
 The suite runs the shellcheck command as one of its cases. `test/shell/`
-covers `tools/build-locales.sh` in a sandbox and `.githooks/commit-msg` in
-a throwaway repository.
+covers `tools/build-locales.sh` in a sandbox, `.githooks/commit-msg` in
+a throwaway repository, and the bash completion.
 
 GitHub Actions runs shellcheck and the suite on every push to `master`
 and on every pull request, in `.github/workflows/tests.yml`.
